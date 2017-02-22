@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Linq;
 using Akka.Actor;
 using Akka.Interfaced.SlimServer;
@@ -8,12 +8,12 @@ using Common.Logging;
 
 namespace Akka.Interfaced.SlimSocket.Server
 {
-    public class TcpGateway : InterfacedActor, IGatewaySync, IActorBoundGatewaySync
+    public class WebSocketGateway : InterfacedActor, IGatewaySync, IActorBoundGatewaySync
     {
         private readonly GatewayInitiator _initiator;
         private readonly ILog _logger;
         private IActorRef _self;
-        private TcpAcceptor _tcpAcceptor;
+        private WebSocketAcceptor _webSocketAcceptor;
         private readonly HashSet<IActorRef> _channelSet = new HashSet<IActorRef>();
         private bool _isStopped;
 
@@ -29,21 +29,21 @@ namespace Akka.Interfaced.SlimSocket.Server
 
         private class AcceptMessage
         {
-            public Socket Socket { get; }
+            public AcceptedWebSocket AcceptedWebSocket { get; }
 
-            public AcceptMessage(Socket socket)
+            public AcceptMessage(AcceptedWebSocket acceptedWebSocket)
             {
-                Socket = socket;
+                AcceptedWebSocket = acceptedWebSocket;
             }
         }
 
         private class AcceptByTokenMessage
         {
-            public TcpConnection Connection { get; }
+            public WebSocketConnection Connection { get; }
             public object Tag;
             public Tuple<IActorRef, TaggedType[], ActorBindingFlags> BindingActor { get; }
 
-            public AcceptByTokenMessage(TcpConnection connection, object tag, Tuple<IActorRef, TaggedType[], ActorBindingFlags> bindingActor)
+            public AcceptByTokenMessage(WebSocketConnection connection, object tag, Tuple<IActorRef, TaggedType[], ActorBindingFlags> bindingActor)
             {
                 Connection = connection;
                 Tag = tag;
@@ -55,7 +55,7 @@ namespace Akka.Interfaced.SlimSocket.Server
         {
         }
 
-        public TcpGateway(GatewayInitiator initiator)
+        public WebSocketGateway(GatewayInitiator initiator)
         {
             _initiator = initiator;
             _logger = initiator.GatewayLogger;
@@ -85,13 +85,13 @@ namespace Akka.Interfaced.SlimSocket.Server
 
         void IGatewaySync.Start()
         {
-            _logger?.InfoFormat("Start (EndPoint={0})", _initiator.ListenEndPoint);
+            _logger?.InfoFormat("Start (EndPoint={0})", _initiator.ListenUri);
 
             try
             {
-                _tcpAcceptor = new TcpAcceptor();
-                _tcpAcceptor.Accepted += OnConnectionAccept;
-                _tcpAcceptor.Listen(_initiator.ListenEndPoint);
+                _webSocketAcceptor = new WebSocketAcceptor();
+                _webSocketAcceptor.Accepted += OnConnectionAccept;
+                _webSocketAcceptor.Listen(_initiator.ListenUri);
             }
             catch (Exception e)
             {
@@ -107,10 +107,9 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             _isStopped = true;
 
-            if (_tcpAcceptor != null)
+            if (_webSocketAcceptor != null)
             {
-                _tcpAcceptor.Close();
-                _tcpAcceptor = null;
+                _webSocketAcceptor.Stop();
             }
 
             if (stopListenOnly)
@@ -128,13 +127,19 @@ namespace Akka.Interfaced.SlimSocket.Server
             else
             {
                 Self.Tell(InterfacedPoisonPill.Instance);
+
+                if (_webSocketAcceptor != null)
+                {
+                    _webSocketAcceptor.Close();
+                    _webSocketAcceptor = null;
+                }
             }
         }
 
-        private TcpAcceptor.AcceptResult OnConnectionAccept(TcpAcceptor sender, Socket socket)
+        private WebSocketAcceptor.AcceptResult OnConnectionAccept(WebSocketAcceptor sender, AcceptedWebSocket acceptedWebSocket)
         {
-            _self.Tell(new AcceptMessage(socket), _self);
-            return TcpAcceptor.AcceptResult.Accept;
+            _self.Tell(new AcceptMessage(acceptedWebSocket), _self);
+            return WebSocketAcceptor.AcceptResult.Accept;
         }
 
         [MessageHandler]
@@ -145,27 +150,28 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             if (_initiator.CheckCreateChannel != null)
             {
-                if (_initiator.CheckCreateChannel(m.Socket.RemoteEndPoint, m.Socket) == false)
+                var aws = m.AcceptedWebSocket;
+                if (_initiator.CheckCreateChannel(aws.RemoteEndPoint, aws.WebSocket) == false)
                 {
-                    m.Socket.Close();
+                    aws.WebSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, System.Threading.CancellationToken.None).Wait();
                     return;
                 }
             }
 
             if (_initiator.TokenRequired)
             {
-                Context.ActorOf(Props.Create(() => new TcpTokenChecker(_initiator, this, m.Socket)));
+                Context.ActorOf(Props.Create(() => new WebSocketTokenChecker(_initiator, this, m.AcceptedWebSocket)));
             }
             else
             {
-                var channel = Context.ActorOf(Props.Create(() => new TcpChannel(_initiator, m.Socket, null)));
+                var channel = Context.ActorOf(Props.Create(() => new WebSocketChannel(_initiator, m.AcceptedWebSocket, null)));
                 if (channel == null)
                 {
-                    _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.Socket.RemoteEndPoint);
+                    _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.AcceptedWebSocket.RemoteEndPoint);
                     return;
                 }
 
-                _logger?.TraceFormat("Accept a connection. (EndPoint={0})", m.Socket.RemoteEndPoint);
+                _logger?.TraceFormat("Accept a connection. (EndPoint={0})", m.AcceptedWebSocket.RemoteEndPoint);
 
                 Context.Watch(channel);
                 _channelSet.Add(channel);
@@ -180,14 +186,14 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             if (_initiator.CheckCreateChannel != null)
             {
-                if (_initiator.CheckCreateChannel(m.Connection.RemoteEndPoint, m.Connection.Socket) == false)
+                if (_initiator.CheckCreateChannel(m.Connection.RemoteEndPoint, m.Connection.WebSocket) == false)
                 {
                     m.Connection.Close();
                     return;
                 }
             }
 
-            var channel = Context.ActorOf(Props.Create(() => new TcpChannel(_initiator, m.Connection, m.Tag, m.BindingActor)));
+            var channel = Context.ActorOf(Props.Create(() => new WebSocketChannel(_initiator, m.Connection, m.Tag, m.BindingActor)));
             if (channel == null)
             {
                 _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.Connection.RemoteEndPoint);
@@ -244,14 +250,14 @@ namespace Akka.Interfaced.SlimSocket.Server
                 }
             }
 
-            var address = string.Join("|", ChannelType.Tcp.ToString(),
-                                           _initiator.ConnectEndPoint.ToString(),
+            var address = string.Join("|", ChannelType.WebSocket.ToString(),
+                                           _initiator.ConnectUri,
                                            token);
             return new BoundActorTarget(1, address);
         }
 
         // Called by Another Worker Threads
-        internal bool EstablishChannel(string token, TcpConnection connection)
+        internal bool EstablishChannel(string token, WebSocketConnection connection)
         {
             WaitingItem item;
 
@@ -297,7 +303,15 @@ namespace Akka.Interfaced.SlimSocket.Server
             _channelSet.Remove(m.ActorRef);
 
             if (_isStopped && _channelSet.Count == 0)
+            {
                 Self.Tell(InterfacedPoisonPill.Instance);
+
+                if (_webSocketAcceptor != null)
+                {
+                    _webSocketAcceptor.Close();
+                    _webSocketAcceptor = null;
+                }
+            }
         }
     }
 }

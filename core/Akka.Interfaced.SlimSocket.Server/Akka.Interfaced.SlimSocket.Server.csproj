@@ -85,6 +85,9 @@
   <ItemGroup>
     <Compile Include="Channel\UdpChannel.cs" />
     <Compile Include="Channel\UdpGateway.cs" />
+    <Compile Include="Channel\WebSocketChannel.cs" />
+    <Compile Include="Channel\WebSocketGateway.cs" />
+    <Compile Include="Channel\WebSocketTokenChecker.cs" />
     <Compile Include="Interface\IGateway.cs" />
     <Compile Include="Properties\Akka.Interfaced.CodeGen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -92,7 +95,7 @@
     <Compile Include="Channel\TcpGateway.cs" />
     <Compile Include="Channel\GatewayInitiator.cs" />
     <Compile Include="Channel\TcpChannel.cs" />
-    <Compile Include="Channel\TokenChecker.cs" />
+    <Compile Include="Channel\TcpTokenChecker.cs" />
     <Compile Include="Transport\AkkaSurrogate.cs" />
     <Compile Include="Transport\HeadTailWriteStream.cs" />
     <Compile Include="Transport\InterlockedCountFlag.cs" />
@@ -101,6 +104,9 @@
     <Compile Include="Transport\TcpConnection.cs" />
     <Compile Include="Transport\TcpConnectionSettings.cs" />
     <Compile Include="Transport\TcpConnector.cs" />
+    <Compile Include="Transport\WebSocketAcceptor.cs" />
+    <Compile Include="Transport\WebSocketConnection.cs" />
+    <Compile Include="Transport\WebSocketConnectionSettings.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Akka.Interfaced.SlimSocket.Base\Akka.Interfaced.SlimSocket.Base.csproj">

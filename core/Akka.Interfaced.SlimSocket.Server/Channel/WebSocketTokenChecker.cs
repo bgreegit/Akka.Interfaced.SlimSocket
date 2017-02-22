@@ -1,30 +1,33 @@
 ﻿using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Net.WebSockets;
 using Akka.Actor;
-using Common.Logging;
 using Akka.Event;
+using Common.Logging;
 
 namespace Akka.Interfaced.SlimSocket.Server
 {
-    public class TokenChecker : UntypedActor
+    public class WebSocketTokenChecker : UntypedActor
     {
         private GatewayInitiator _initiator;
-        private TcpGateway _gateway;
+        private WebSocketGateway _gateway;
         private ILog _logger;
         private IActorRef _self;
         private EventStream _eventStream;
-        private Socket _socket;
-        private TcpConnection _connection;
+        private AcceptedWebSocket _acceptedWebSocket;
+        private WebSocketConnection _connection;
         private ICancelable _timeoutCanceler;
 
-        public TokenChecker(GatewayInitiator initiator, TcpGateway gateway, Socket socket)
+        public WebSocketTokenChecker(GatewayInitiator initiator, WebSocketGateway gateway, AcceptedWebSocket acceptedWebSocket)
         {
+            var aws = acceptedWebSocket;
+
             _initiator = initiator;
             _gateway = gateway;
-            _logger = initiator.CreateChannelLogger(socket.RemoteEndPoint, socket);
-            _socket = socket;
-            _connection = new TcpConnection(_logger, socket) { Settings = initiator.ConnectionSettings };
+            _logger = initiator.CreateChannelLogger(aws.RemoteEndPoint, aws);
+            _acceptedWebSocket = aws;
+            _connection = new WebSocketConnection(_logger, aws.WebSocket, aws.LocalEndpoint, aws.RemoteEndPoint) { Settings = initiator.WebSocketConnectionSettings };
         }
 
         protected override void PreStart()
@@ -61,12 +64,12 @@ namespace Akka.Interfaced.SlimSocket.Server
             Unhandled(message);
         }
 
-        protected void OnConnectionClose(TcpConnection connection, int reason)
+        protected void OnConnectionClose(WebSocketConnection connection, int reason)
         {
             _self.Tell(PoisonPill.Instance);
         }
 
-        protected void OnConnectionReceive(TcpConnection connection, object packet)
+        protected void OnConnectionReceive(WebSocketConnection connection, object packet)
         {
             _connection.Closed -= OnConnectionClose;
             _connection.Received -= OnConnectionReceive;

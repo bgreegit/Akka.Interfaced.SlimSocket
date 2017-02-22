@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Linq;
+using System.Net.WebSockets;
 using Akka.Actor;
 using Akka.Event;
 using Akka.Interfaced.SlimServer;
@@ -9,31 +10,36 @@ using Common.Logging;
 
 namespace Akka.Interfaced.SlimSocket.Server
 {
-    public class TcpChannel : ActorBoundChannelBase
+    public class WebSocketChannel : ActorBoundChannelBase
     {
         private GatewayInitiator _initiator;
         private ILog _logger;
         private IActorRef _self;
         private EventStream _eventStream;
-        private Socket _socket;
-        private TcpConnection _connection;
+        private WebSocket _socket;
+        private WebSocketConnection _connection;
 
-        public TcpChannel(GatewayInitiator initiator, Socket socket, object tag)
+        public WebSocketChannel(GatewayInitiator initiator, AcceptedWebSocket acceptedWebSocket, object tag)
         {
+            var aws = acceptedWebSocket;
+
             // open by client connection.
             _initiator = initiator;
-            _logger = _initiator.CreateChannelLogger(socket.RemoteEndPoint, socket);
-            _socket = socket;
-            _connection = new TcpConnection(_logger, _socket) { Settings = initiator.TcpConnectionSettings };
+            _logger = _initiator.CreateChannelLogger(aws.RemoteEndPoint, aws.WebSocket);
+            _socket = aws.WebSocket;
+            _connection = new WebSocketConnection(_logger, _socket, aws.LocalEndpoint, aws.RemoteEndPoint)
+            {
+                Settings = initiator.WebSocketConnectionSettings
+            };
             _tag = tag;
         }
 
-        public TcpChannel(GatewayInitiator initiator, TcpConnection connection, object tag, Tuple<IActorRef, TaggedType[], ActorBindingFlags> bindingActor)
+        public WebSocketChannel(GatewayInitiator initiator, WebSocketConnection connection, object tag, Tuple<IActorRef, TaggedType[], ActorBindingFlags> bindingActor)
         {
             // open by registerd token.
             _initiator = initiator;
-            _logger = initiator.CreateChannelLogger(connection.RemoteEndPoint, connection.Socket);
-            _socket = connection.Socket;
+            _logger = initiator.CreateChannelLogger(connection.RemoteEndPoint, connection.WebSocket);
+            _socket = connection.WebSocket;
             _connection = connection;
             _tag = tag;
 
@@ -46,8 +52,6 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             _self = Self;
             _eventStream = Context.System.EventStream;
-
-            // create initial actors and bind them
 
             if (_initiator.CreateInitialActors != null)
             {
@@ -79,18 +83,11 @@ namespace Akka.Interfaced.SlimSocket.Server
             }
             else
             {
-                if (_connection.Active)
+                _connection.Send(new Packet
                 {
-                    _connection.Send(new Packet
-                    {
-                        Type = PacketType.System,
-                        Message = "1",
-                    });
-                }
-                else
-                {
-                    OnConnectionClose(_connection, -1);
-                }
+                    Type = PacketType.System,
+                    Message = "1",
+                });
             }
         }
 
@@ -138,13 +135,13 @@ namespace Akka.Interfaced.SlimSocket.Server
         }
 
         // BEWARE: Called by Network Thread
-        private void OnConnectionClose(TcpConnection connection, int reason)
+        private void OnConnectionClose(WebSocketConnection connection, int reason)
         {
             RunTask(() => Close(), _self);
         }
 
         // BEWARE: Called by Network Thread
-        private void OnConnectionReceive(TcpConnection connection, object packet)
+        private void OnConnectionReceive(WebSocketConnection connection, object packet)
         {
             // The thread that call this function is different from actor context thread.
             // To deal with this contention lock protection is required.
