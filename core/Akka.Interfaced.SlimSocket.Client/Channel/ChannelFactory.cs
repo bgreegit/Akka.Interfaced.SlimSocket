@@ -9,6 +9,7 @@ namespace Akka.Interfaced.SlimSocket.Client
     {
         public ChannelType Type { get; set; }
         public IPEndPoint ConnectEndPoint { get; set; }
+        public string ConnectUri { get; set; }
         public string ConnectToken { get; set; }
         public Func<ILog> CreateChannelLogger { get; set; }
         public ISlimTaskFactory TaskFactory { get; set; }
@@ -16,6 +17,7 @@ namespace Akka.Interfaced.SlimSocket.Client
         public Func<IChannel, string, IChannel> ChannelRouter { get; set; }
         public IPacketSerializer PacketSerializer { get; set; }
         public object UdpConfig { get; set; }
+        public Func<IWebSocket> CreateWebSocket { get; set; }
 
         public ChannelFactory()
         {
@@ -32,6 +34,7 @@ namespace Akka.Interfaced.SlimSocket.Client
         {
             var type = Type;
             var connectEndPoint = ConnectEndPoint;
+            var connectUri = ConnectUri;
             var connectToken = ConnectToken;
 
             if (string.IsNullOrEmpty(address) == false)
@@ -40,7 +43,12 @@ namespace Akka.Interfaced.SlimSocket.Client
                 if (parts.Length < 2)
                     throw new ArgumentException(nameof(address));
                 type = (ChannelType)Enum.Parse(typeof(ChannelType), parts[0], true);
-                connectEndPoint = IPEndPointHelper.Parse(parts[1]);
+                if (type == ChannelType.Tcp || type == ChannelType.Udp)
+                    connectEndPoint = IPEndPointHelper.Parse(parts[1]);
+                else if (type == ChannelType.WebSocket)
+                    connectUri = parts[1];
+                else
+                    throw new ArgumentException(nameof(address));
                 connectToken = parts.Length > 2 ? parts[2] : null;
             }
 
@@ -55,6 +63,17 @@ namespace Akka.Interfaced.SlimSocket.Client
                     var udpChannel = new UdpChannel(CreateChannelLogger(), connectEndPoint, connectToken, PacketSerializer, (NetPeerConfiguration)UdpConfig);
                     InitializeChannel(udpChannel);
                     return udpChannel;
+
+                case ChannelType.WebSocket:
+                    var logger = CreateChannelLogger();
+
+                    var createWebSocket = CreateWebSocket;
+                    if (createWebSocket == null)
+                        createWebSocket = () => { return new WebSocket(logger); };
+
+                    var webSocketChannel = new WebSocketChannel(logger, connectUri, connectToken, PacketSerializer, createWebSocket);
+                    InitializeChannel(webSocketChannel);
+                    return webSocketChannel;
 
                 default:
                     throw new InvalidOperationException("Unknown TransportType");

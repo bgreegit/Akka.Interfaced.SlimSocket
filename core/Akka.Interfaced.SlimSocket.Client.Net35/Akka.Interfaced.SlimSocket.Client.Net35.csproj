@@ -66,6 +66,10 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="websocket-sharp, Version=1.0.4.0, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\WebSocketSharpFork.1.0.4.0\lib\net35\websocket-sharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\ChannelBase.cs">
@@ -95,6 +99,9 @@
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\UdpChannel.cs">
       <Link>Channel\UdpChannel.cs</Link>
     </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\WebSocketChannel.cs">
+      <Link>Channel\WebSocketChannel.cs</Link>
+    </Compile>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Communicator\Communicator.cs">
       <Link>Communicator\Communicator.cs</Link>
     </Compile>
@@ -116,11 +123,20 @@
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Task\SlimTaskFactory.cs">
       <Link>Task\SlimTaskFactory.cs</Link>
     </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Transport\IWebSocket.cs">
+      <Link>Transport\IWebSocket.cs</Link>
+    </Compile>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Transport\PacketSerializer.cs">
       <Link>Transport\PacketSerializer.cs</Link>
     </Compile>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Transport\TcpConnection.cs">
       <Link>Transport\TcpConnection.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Transport\WebSocket.cs">
+      <Link>Transport\WebSocket.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Transport\WebSocketConnection.cs">
+      <Link>Transport\WebSocketConnection.cs</Link>
     </Compile>
   </ItemGroup>
   <ItemGroup>

@@ -4,5 +4,6 @@
     {
         Tcp = 1,
         Udp = 2,
+        WebSocket = 3
     }
 }
