@@ -48,7 +48,7 @@ namespace UnityBasic.Program.Server
                 GatewayLogger = LogManager.GetLogger("Gateway"),
                 GatewayInitialized = a => { environment.Gateway = a.Cast<ActorBoundGatewayRef>(); },
                 CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep}"),
-                ConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
                 PacketSerializer = serializer,
                 CreateInitialActors = (context, connection) => new[]
                 {
@@ -73,7 +73,7 @@ namespace UnityBasic.Program.Server
                 TokenRequired = true,
                 GatewayInitialized = a => { environment.Gateway2nd = a.Cast<ActorBoundGatewayRef>(); },
                 CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel2({ep}"),
-                ConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
                 PacketSerializer = serializer,
             };
 

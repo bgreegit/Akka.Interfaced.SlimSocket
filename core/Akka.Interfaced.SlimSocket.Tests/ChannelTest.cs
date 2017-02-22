@@ -1,7 +1,7 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
+using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Interfaced.SlimServer;
 using Xunit;
@@ -12,17 +12,66 @@ namespace Akka.Interfaced.SlimSocket
     public class ChannelTest : TestKit.Xunit2.TestKit
     {
         private static readonly IPEndPoint s_lastTestEndPoint = new IPEndPoint(IPAddress.Loopback, 5060);
+        private static int s_lastTestPort = 5060;
+        private static readonly string s_lastConnectTestUri = "ws://localhost:{0}/ws/";
+        private static readonly string s_lastListenTestUri = "http://+:{0}/ws/";
 
         private readonly XunitOutputLogger.Source _outputSource;
         private readonly IPEndPoint _testEndPoint;
+        private readonly string _testConnectUri0;
+        private readonly string _testConnectUri1;
+        private readonly string _testListenUri0;
+        private readonly string _testListenUri1;
         private readonly EntryActorEnvironment _environment;
+
+        public static class NetAclChecker
+        {
+            public static void AddAddress(string address)
+            {
+                AddAddress(address, Environment.UserDomainName, Environment.UserName);
+            }
+
+            public static void AddAddress(string address, string domain, string user)
+            {
+                string args = string.Format(@"http add urlacl url={0} user={1}\{2}", address, domain, user);
+
+                ProcessStartInfo psi = new ProcessStartInfo("netsh", args);
+                psi.Verb = "runas";
+                psi.CreateNoWindow = true;
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                psi.UseShellExecute = true;
+
+                Process.Start(psi).WaitForExit();
+            }
+
+            public static void ShowAddress(string address)
+            {
+                string args = string.Format(@"show urlacl url={0}", address);
+
+                ProcessStartInfo psi = new ProcessStartInfo("netsh", args);
+                psi.Verb = "runas";
+                psi.CreateNoWindow = true;
+                psi.WindowStyle = ProcessWindowStyle.Hidden;
+                psi.UseShellExecute = true;
+
+                Process.Start(psi).WaitForExit();
+            }
+        }
 
         public ChannelTest(ITestOutputHelper output)
             : base(output: output)
         {
             _outputSource = new XunitOutputLogger.Source { Output = output, Lock = new object(), Active = true };
+
             _testEndPoint = s_lastTestEndPoint;
             s_lastTestEndPoint.Port += 2;
+
+            _testConnectUri0 = string.Format(s_lastConnectTestUri, s_lastTestPort);
+            _testConnectUri1 = string.Format(s_lastConnectTestUri, s_lastTestPort + 1);
+            _testListenUri0 = string.Format(s_lastListenTestUri, s_lastTestPort);
+            _testListenUri1 = string.Format(s_lastListenTestUri, s_lastTestPort + 1);
+            s_lastTestPort += 2;
+
             _environment = new EntryActorEnvironment();
         }
 
@@ -40,6 +89,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientConnectToSlimServer(ChannelType type)
         {
             // Arrange
@@ -57,6 +107,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientFailedToConnectToSlimServer(ChannelType type)
         {
             // Act
@@ -69,6 +120,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientFailedToRequestWithClosedChannel(ChannelType type)
         {
             // Arrange
@@ -85,6 +137,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientGetExceptionOfPendingRequestAfterChannelClosed(ChannelType type)
         {
             // Arrange
@@ -102,6 +155,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientGetSecondBoundActor(ChannelType type)
         {
             // Arrange
@@ -122,6 +176,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientGetsNotificationMessages(ChannelType type)
         {
             // Arrange
@@ -147,6 +202,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientConnectToSlimServerWithToken(ChannelType type)
         {
             // Arrange
@@ -168,6 +224,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task SlimClientConnectToSlimServerWithToken_Timeout(ChannelType type)
         {
             // Arrange
@@ -190,6 +247,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task CloseChannel_ChannelClosed(ChannelType type)
         {
             // Arrange
@@ -212,6 +270,8 @@ namespace Akka.Interfaced.SlimSocket
         [InlineData(ChannelType.Tcp, 2)]
         [InlineData(ChannelType.Udp, 0)]
         [InlineData(ChannelType.Udp, 2)]
+        [InlineData(ChannelType.WebSocket, 0)]
+        [InlineData(ChannelType.WebSocket, 2)]
         public async Task GatewayStop_AllChannelClosed_ThenStop(ChannelType type, int clientCount)
         {
             // Arrange
@@ -234,6 +294,7 @@ namespace Akka.Interfaced.SlimSocket
         [Theory]
         [InlineData(ChannelType.Tcp)]
         [InlineData(ChannelType.Udp)]
+        [InlineData(ChannelType.WebSocket)]
         public async Task GatewayStopListen_StopListeningAndKeepActiveConnections(ChannelType type)
         {
             // Arrange
@@ -257,7 +318,10 @@ namespace Akka.Interfaced.SlimSocket
 
         private Server.GatewayRef CreatePrimaryGateway(ChannelType type, Action<Server.GatewayInitiator> initiatorSetup = null)
         {
-            return ChannelHelper.CreateGateway(Sys, type, "1", _testEndPoint, _outputSource, initiator =>
+            if (type == ChannelType.WebSocket)
+                NetAclChecker.AddAddress(_testListenUri0);
+
+            return ChannelHelper.CreateGateway(Sys, type, "1", _testEndPoint, _testListenUri0, _testConnectUri0, _outputSource, initiator =>
             {
                 initiator.GatewayInitialized = a => { _environment.Gateway = a.Cast<ActorBoundGatewayRef>(); };
                 initiator.CreateInitialActors = (IActorContext context, object socket) => new[]
@@ -274,7 +338,12 @@ namespace Akka.Interfaced.SlimSocket
 
         private Server.GatewayRef CreateSecondaryGateway(ChannelType type, Action<Server.GatewayInitiator> initiatorSetup = null)
         {
-            return ChannelHelper.CreateGateway(Sys, type, "2", new IPEndPoint(_testEndPoint.Address, _testEndPoint.Port + 1), _outputSource, initiator =>
+            if (type == ChannelType.WebSocket)
+                NetAclChecker.AddAddress(_testListenUri1);
+
+            return ChannelHelper.CreateGateway(Sys, type, "2", new IPEndPoint(_testEndPoint.Address, _testEndPoint.Port + 1),
+                                               _testListenUri1, _testConnectUri1, _outputSource,
+            initiator =>
             {
                 initiator.TokenRequired = true;
                 initiator.GatewayInitialized = a => { _environment.Gateway2nd = a.Cast<ActorBoundGatewayRef>(); };
@@ -285,7 +354,7 @@ namespace Akka.Interfaced.SlimSocket
 
         private async Task<Client.IChannel> CreatePrimaryClientChannelAsync(ChannelType type, bool connected = true)
         {
-            var channel = ChannelHelper.CreateClientChannel("1", type, _testEndPoint, _outputSource);
+            var channel = ChannelHelper.CreateClientChannel("1", type, _testEndPoint, _testConnectUri0, _outputSource);
 
             channel.ChannelRouter = (_, address) =>
             {

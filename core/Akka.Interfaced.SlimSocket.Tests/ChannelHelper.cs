@@ -3,6 +3,7 @@ using System.Net;
 using Akka.Actor;
 using Akka.Interfaced.SlimSocket.Client;
 using Lidgren.Network;
+using Akka.Interfaced.SlimSocket.Server;
 
 namespace Akka.Interfaced.SlimSocket
 {
@@ -12,6 +13,7 @@ namespace Akka.Interfaced.SlimSocket
         private static readonly Client.PacketSerializer s_clientSerializer = Client.PacketSerializer.CreatePacketSerializer();
 
         public static Server.GatewayRef CreateGateway(ActorSystem system, ChannelType type, string name, IPEndPoint endPoint,
+                                                      string listenUri, string connectUri,
                                                       XunitOutputLogger.Source outputSource,
                                                       Action<Server.GatewayInitiator> clientInitiatorSetup = null)
         {
@@ -22,10 +24,13 @@ namespace Akka.Interfaced.SlimSocket
                 GatewayLogger = new XunitOutputLogger($"Gateway({name})", outputSource),
                 ListenEndPoint = endPoint,
                 ConnectEndPoint = endPoint,
+                ListenUri = listenUri,
+                ConnectUri = connectUri,
                 TokenRequired = false,
                 CreateChannelLogger = (_, o) => new XunitOutputLogger($"ServerChannel({name})", outputSource),
                 CheckCreateChannel = (_, o) => true,
-                ConnectionSettings = new Server.TcpConnectionSettings { PacketSerializer = s_serverSerializer },
+                TcpConnectionSettings = new Server.TcpConnectionSettings { PacketSerializer = s_serverSerializer },
+                WebSocketConnectionSettings = new Server.WebSocketConnectionSettings { PacketSerializer = s_serverSerializer },
                 PacketSerializer = s_serverSerializer,
             };
 
@@ -33,18 +38,25 @@ namespace Akka.Interfaced.SlimSocket
 
             // create gateway and start it
 
-            var gateway = (type == ChannelType.Tcp)
-                ? system.ActorOf(Props.Create(() => new Server.TcpGateway(initiator))).Cast<Server.GatewayRef>()
-                : system.ActorOf(Props.Create(() => new Server.UdpGateway(initiator))).Cast<Server.GatewayRef>();
+            GatewayRef gateway = null;
+            if (type == ChannelType.Tcp)
+                gateway = system.ActorOf(Props.Create(() => new Server.TcpGateway(initiator))).Cast<Server.GatewayRef>();
+            else if (type == ChannelType.Udp)
+                gateway = system.ActorOf(Props.Create(() => new Server.UdpGateway(initiator))).Cast<Server.GatewayRef>();
+            else
+                gateway = system.ActorOf(Props.Create(() => new Server.WebSocketGateway(initiator))).Cast<Server.GatewayRef>();
             gateway.Start().Wait();
 
             return gateway;
         }
 
-        public static Client.IChannel CreateClientChannel(string name, ChannelType type, IPEndPoint endPoint,
+        public static Client.IChannel CreateClientChannel(string name, ChannelType type, IPEndPoint endPoint, string uri,
                                                           XunitOutputLogger.Source outputSource)
         {
-            return CreateClientChannel(name, $"{type}|{endPoint}|", outputSource);
+            if (type == ChannelType.Tcp || type == ChannelType.Udp)
+                return CreateClientChannel(name, $"{type}|{endPoint}|", outputSource);
+            else
+                return CreateClientChannel(name, $"{type}|{uri}|", outputSource);
         }
 
         public static Client.IChannel CreateClientChannel(string name, string address, XunitOutputLogger.Source outputSource)

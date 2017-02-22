@@ -46,13 +46,15 @@ namespace HelloWorld.Program.Client
     {
         private static void Main(string[] args)
         {
+            int port = 5001;
             var channelFactory = new ChannelFactory
             {
                 Type = ChannelType.Tcp,
-                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, 5001),
+                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+                ConnectUri = string.Format("ws://localhost:{0}/ws/", port + 1),
                 CreateChannelLogger = () => null,
                 CreateObserverRegistry = () => new ObserverRegistry(),
-                PacketSerializer = PacketSerializer.CreatePacketSerializer()
+                PacketSerializer = PacketSerializer.CreatePacketSerializer(),
             };
 
             // TCP
@@ -61,6 +63,10 @@ namespace HelloWorld.Program.Client
 
             // UDP
             channelFactory.Type = ChannelType.Udp;
+            driver.Run(channelFactory.Create()).Wait();
+
+            // WebSocket
+            channelFactory.Type = ChannelType.WebSocket;
             driver.Run(channelFactory.Create()).Wait();
         }
     }
