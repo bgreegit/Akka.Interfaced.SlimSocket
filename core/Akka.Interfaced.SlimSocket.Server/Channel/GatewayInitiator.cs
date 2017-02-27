@@ -45,7 +45,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             if (udpConnection != null)
                 return udpConnection.RemoteEndPoint;
 
-            // WebSocket has no RemoteEndPoint
+            var webSocketConnection = connection as WebSocketConnection;
+            if (webSocketConnection != null)
+                return webSocketConnection.RemoteEndPoint;
 
             return null;
         }
