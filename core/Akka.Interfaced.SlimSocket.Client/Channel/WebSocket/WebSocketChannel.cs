@@ -1,25 +1,26 @@
 ﻿using System;
-using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
 using Common.Logging;
 
 namespace Akka.Interfaced.SlimSocket.Client
 {
-    public class TcpChannel : ChannelBase
+    public class WebSocketChannel : ChannelBase
     {
-        private IPEndPoint _remoteEndPoint;
+        private string _uri;
         private IPacketSerializer _packetSerializer;
         private string _token;
-        private TcpConnection _tcpConnection;
+        private WebSocketConnection _webSocketConnection;
+        private Func<IWebSocket> _createWebSocket;
         private ISlimTaskCompletionSource<bool> _connectTcs;
 
-        public TcpChannel(ILog logger, IPEndPoint remoteEndPoint, string token, IPacketSerializer packetSerializer)
+        public WebSocketChannel(ILog logger, string uri, string token, IPacketSerializer packetSerializer, Func<IWebSocket> createWebSocket)
             : base(logger)
         {
-            _remoteEndPoint = remoteEndPoint;
+            _uri = uri;
             _token = token;
             _packetSerializer = packetSerializer;
+            _createWebSocket = createWebSocket;
         }
 
         public override Task<bool> ConnectAsync()
@@ -32,12 +33,12 @@ namespace Akka.Interfaced.SlimSocket.Client
 
             SetState(ChannelStateType.Connecting);
 
-            var connection = new TcpConnection(_packetSerializer, _logger);
-            _tcpConnection = connection;
-            _tcpConnection.Connected += OnConnect;
-            _tcpConnection.Received += OnReceive;
-            _tcpConnection.Closed += OnClose;
-            _tcpConnection.Connect(_remoteEndPoint);
+            var connection = new WebSocketConnection(_packetSerializer, _logger, _createWebSocket);
+            _webSocketConnection = connection;
+            _webSocketConnection.Connected += OnConnect;
+            _webSocketConnection.Received += OnReceive;
+            _webSocketConnection.Closed += OnClose;
+            _webSocketConnection.Connect(_uri);
 
             return tcs.Task;
         }
@@ -47,10 +48,13 @@ namespace Akka.Interfaced.SlimSocket.Client
             _logger?.Info("Close.");
 
             SetState(ChannelStateType.Closed);
-            _tcpConnection?.Close();
+            _webSocketConnection?.Close();
         }
 
-        // BEWARE: CALLED BY WORK THREAD
+        public override void Update(TimeSpan span)
+        {
+        }
+
         private void OnConnect(object sender)
         {
             _logger?.Trace("Connected.");
@@ -61,7 +65,7 @@ namespace Akka.Interfaced.SlimSocket.Client
             }
             else
             {
-                _tcpConnection.SendPacket(new Packet
+                _webSocketConnection.SendPacket(new Packet
                 {
                     Type = PacketType.System,
                     Message = _token
@@ -82,7 +86,6 @@ namespace Akka.Interfaced.SlimSocket.Client
             }
         }
 
-        // BEWARE: CALLED BY WORK THREAD
         private void OnReceive(object sender, object packet)
         {
             var p = (Packet)packet;
@@ -103,7 +106,6 @@ namespace Akka.Interfaced.SlimSocket.Client
             }
         }
 
-        // BEWARE: CALLED BY WORK THREAD
         private void OnClose(object sender, int reason)
         {
             _logger?.TraceFormat("Closed. (reason={0})", reason);
@@ -121,7 +123,7 @@ namespace Akka.Interfaced.SlimSocket.Client
         {
             if (_state == ChannelStateType.Connected)
             {
-                _tcpConnection.SendPacket(packet);
+                _webSocketConnection.SendPacket(packet);
             }
         }
     }

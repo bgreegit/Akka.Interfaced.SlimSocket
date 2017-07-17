@@ -62,6 +62,8 @@ namespace Akka.Interfaced.SlimSocket.Client
 
         public abstract void Close();
 
+        public abstract void Update(TimeSpan span);
+
         protected abstract void SendRequestPacket(Packet packet);
 
         public TRef CreateRef<TRef>(int actorId = 1)

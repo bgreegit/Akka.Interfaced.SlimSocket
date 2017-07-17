@@ -29,6 +29,13 @@ namespace Akka.Interfaced.SlimSocket
                 TokenRequired = false,
                 CreateChannelLogger = (_, o) => new XunitOutputLogger($"ServerChannel({name})", outputSource),
                 CheckCreateChannel = (_, o) => true,
+                SessionSettings = new Server.SessionSettings()
+                {
+                    OfflineTimeout = TimeSpan.FromSeconds(5),
+                    TimeWaitTimeout = TimeSpan.FromSeconds(1), // to fail faster
+                    AliveCheckInterval = TimeSpan.FromSeconds(0.1), // to fail faster
+                    AliveCheckWaitInterval = TimeSpan.FromSeconds(0.5), // to fail faster
+                },
                 TcpConnectionSettings = new Server.TcpConnectionSettings { PacketSerializer = s_serverSerializer },
                 WebSocketConnectionSettings = new Server.WebSocketConnectionSettings { PacketSerializer = s_serverSerializer },
                 PacketSerializer = s_serverSerializer,
@@ -43,8 +50,10 @@ namespace Akka.Interfaced.SlimSocket
                 gateway = system.ActorOf(Props.Create(() => new Server.TcpGateway(initiator))).Cast<Server.GatewayRef>();
             else if (type == ChannelType.Udp)
                 gateway = system.ActorOf(Props.Create(() => new Server.UdpGateway(initiator))).Cast<Server.GatewayRef>();
-            else
+            else if (type == ChannelType.WebSocket)
                 gateway = system.ActorOf(Props.Create(() => new Server.WebSocketGateway(initiator))).Cast<Server.GatewayRef>();
+            else if (type == ChannelType.Session)
+                gateway = system.ActorOf(Props.Create(() => new Server.SessionGateway(initiator))).Cast<Server.GatewayRef>();
             gateway.Start().Wait();
 
             return gateway;
@@ -53,7 +62,7 @@ namespace Akka.Interfaced.SlimSocket
         public static Client.IChannel CreateClientChannel(string name, ChannelType type, IPEndPoint endPoint, string uri,
                                                           XunitOutputLogger.Source outputSource)
         {
-            if (type == ChannelType.Tcp || type == ChannelType.Udp)
+            if (type == ChannelType.Tcp || type == ChannelType.Udp || type == ChannelType.Session)
                 return CreateClientChannel(name, $"{type}|{endPoint}|", outputSource);
             else
                 return CreateClientChannel(name, $"{type}|{uri}|", outputSource);
@@ -64,18 +73,31 @@ namespace Akka.Interfaced.SlimSocket
             // create channel and start it
 
             var logger = new XunitOutputLogger($"ClientChannel({name})", outputSource);
+            var sessionSettings = new Client.SessionSettings()
+            {
+                OfflineTimeout = TimeSpan.FromSeconds(5), // to fail faster
+                RebindCoolTimeTimeout = TimeSpan.FromSeconds(0.1), // to fail faster
+                RebindTimeout = TimeSpan.FromSeconds(1), // to fail faster
+
+                AliveCheckInterval = TimeSpan.FromSeconds(0.2),
+                AliveCheckWaitInterval = TimeSpan.FromSeconds(1)
+            };
 
             var factory = new Client.ChannelFactory
             {
                 CreateChannelLogger = () => logger,
                 CreateObserverRegistry = () => new ObserverRegistry(),
-                PacketSerializer = s_clientSerializer
+                PacketSerializer = s_clientSerializer,
+                SessionSettings = sessionSettings,
             };
 
             var udpConfig = ((NetPeerConfiguration)factory.UdpConfig);
             udpConfig.MaximumHandshakeAttempts = 1; // to fail faster
 
-            return factory.Create(address);
+            var channel = factory.Create(address);
+            var updator = new TaskBasedChannelUpdator();
+            updator.StartUpdate(channel);
+            return channel;
         }
     }
 }

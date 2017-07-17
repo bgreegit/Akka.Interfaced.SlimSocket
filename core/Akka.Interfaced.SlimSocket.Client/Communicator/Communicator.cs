@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Akka.Interfaced.SlimSocket.Client
@@ -9,6 +10,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         public IList<IChannel> Channels { get; }
         public IObserverRegistry ObserverRegistry { get; }
 
+        private DateTime _lastUpdateTime;
+        private event Action<TimeSpan> Updated;
+
         public Communicator()
         {
             ChannelFactory = new ChannelFactory()
@@ -18,6 +22,8 @@ namespace Akka.Interfaced.SlimSocket.Client
             };
             Channels = new List<IChannel>();
             ObserverRegistry = new ObserverRegistry();
+
+            _lastUpdateTime = DateTime.UtcNow;
         }
 
         public IChannel CreateChannel(string address = null)
@@ -33,6 +39,14 @@ namespace Akka.Interfaced.SlimSocket.Client
                 channel.Close();
         }
 
+        public void Update()
+        {
+            var now = DateTime.UtcNow;
+            var span = now - _lastUpdateTime;
+            _lastUpdateTime = now;
+            Updated?.Invoke(span);
+        }
+
         private IChannel OnChannelRouting(IChannel parentChannel, string address)
         {
             return CreateChannel(address);
@@ -46,6 +60,8 @@ namespace Akka.Interfaced.SlimSocket.Client
                     OnChannelClosed(channel);
             };
 
+            Updated += newChannel.Update;
+
             lock (Channels)
             {
                 Channels.Add(newChannel);
@@ -54,6 +70,8 @@ namespace Akka.Interfaced.SlimSocket.Client
 
         private void OnChannelClosed(IChannel channel)
         {
+            Updated -= channel.Update;
+
             lock (Channels)
             {
                 Channels.Remove(channel);

@@ -15,6 +15,8 @@ namespace Akka.Interfaced.SlimSocket.Client
 
         void Close();
 
+        void Update(TimeSpan span);
+
         TRef CreateRef<TRef>(int actorId = 1)
             where TRef : InterfacedActorRef, new();
 

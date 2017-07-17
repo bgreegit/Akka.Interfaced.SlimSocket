@@ -93,14 +93,26 @@
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\ObserverRegistry.cs">
       <Link>Channel\ObserverRegistry.cs</Link>
     </Compile>
-    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\TcpChannel.cs">
-      <Link>Channel\TcpChannel.cs</Link>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\Session\ISessionLine.cs">
+      <Link>Channel\Session\ISessionLine.cs</Link>
     </Compile>
-    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\UdpChannel.cs">
-      <Link>Channel\UdpChannel.cs</Link>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\Session\SessionChannel.cs">
+      <Link>Channel\Session\SessionChannel.cs</Link>
     </Compile>
-    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\WebSocketChannel.cs">
-      <Link>Channel\WebSocketChannel.cs</Link>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\Session\SessionSettings.cs">
+      <Link>Channel\Session\SessionSettings.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\Session\TcpSessionLine.cs">
+      <Link>Channel\Session\TcpSessionLine.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\Tcp\TcpChannel.cs">
+      <Link>Channel\Tcp\TcpChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\Udp\UdpChannel.cs">
+      <Link>Channel\Udp\UdpChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Channel\WebSocket\WebSocketChannel.cs">
+      <Link>Channel\WebSocket\WebSocketChannel.cs</Link>
     </Compile>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Client\Communicator\Communicator.cs">
       <Link>Communicator\Communicator.cs</Link>
@@ -153,6 +165,7 @@
     <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.CodeFixes.dll" />
     <Analyzer Include="..\..\packages\StyleCop.Analyzers.1.0.0\analyzers\dotnet\cs\StyleCop.Analyzers.dll" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

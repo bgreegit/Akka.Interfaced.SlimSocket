@@ -45,7 +45,7 @@ namespace HelloWorld.Program.Server
                 ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
                 ListenUri = string.Format("http://+:{0}/ws/", port),
                 GatewayLogger = LogManager.GetLogger("Gateway"),
-                CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep}"),
+                CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep})"),
                 TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
                 WebSocketConnectionSettings = new WebSocketConnectionSettings { PacketSerializer = serializer },
                 PacketSerializer = serializer,

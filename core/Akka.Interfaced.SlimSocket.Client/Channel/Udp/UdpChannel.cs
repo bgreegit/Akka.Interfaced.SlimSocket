@@ -60,6 +60,10 @@ namespace Akka.Interfaced.SlimSocket.Client
             _client?.Disconnect("Close");
         }
 
+        public override void Update(TimeSpan span)
+        {
+        }
+
         private void SendPacket(Packet packet)
         {
             var msg = _client.CreateMessage();

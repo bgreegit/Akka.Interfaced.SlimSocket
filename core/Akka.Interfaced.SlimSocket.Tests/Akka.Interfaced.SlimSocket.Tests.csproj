@@ -134,6 +134,7 @@
     <Compile Include="Interface\IGreetObserver.cs" />
     <Compile Include="Properties\Akka.Interfaced.CodeGen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TaskBasedChannelUpdator.cs" />
     <Compile Include="TestGreetObserver.cs" />
     <Compile Include="XunitOutputLogger.cs" />
   </ItemGroup>

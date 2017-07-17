@@ -19,6 +19,7 @@ namespace Akka.Interfaced.SlimSocket.Server
         public Action<IActorRef> GatewayInitialized { get; set; }
         public Func<EndPoint, object, ILog> CreateChannelLogger { get; set; }
         public Func<EndPoint, object, bool> CheckCreateChannel { get; set; }
+        public SessionSettings SessionSettings { get; set; }
         public TcpConnectionSettings TcpConnectionSettings { get; set; }
         public WebSocketConnectionSettings WebSocketConnectionSettings { get; set; }
         public IPacketSerializer PacketSerializer { get; set; }

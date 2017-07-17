@@ -21,3 +21,6 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("bb4a7f05-5f17-46b4-af99-32e9ba28f673")]
+
+// For test project
+[assembly: InternalsVisibleTo("Akka.Interfaced.SlimSocket.Tests")]

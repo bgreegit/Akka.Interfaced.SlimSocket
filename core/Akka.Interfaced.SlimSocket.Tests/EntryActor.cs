@@ -26,7 +26,21 @@ namespace Akka.Interfaced.SlimSocket
         {
             // Force channel to be closed
             if (message == "Close")
+            {
                 _channel.CastToIActorRef().Tell(InterfacedPoisonPill.Instance);
+            }
+
+            // Force SessionChannel to close line
+            if (message == "CloseSessionLine")
+            {
+                _channel.CastToIActorRef().Tell(new Server.SessionChannel.ChannelCloseRequestMessage());
+            }
+
+            // Force SessionChannel to close gracefully
+            if (message == "CloseSessionGracefully")
+            {
+                _channel.Close();
+            }
 
             return Task.FromResult(message);
         }

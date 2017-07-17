@@ -6,6 +6,11 @@ namespace Akka.Interfaced.SlimSocket
 {
     public static class SerializeExtensions
     {
+        public static int Estimate32BitEncodedIntLength()
+        {
+            return 4;
+        }
+
         public static void Write32BitEncodedInt(this Stream stream, int value)
         {
             // Naive implementation
@@ -19,6 +24,11 @@ namespace Akka.Interfaced.SlimSocket
             var intBytes = new byte[4];
             stream.Read(intBytes, 0, 4);
             return BitConverter.ToInt32(intBytes, 0);
+        }
+
+        public static int Estimate7BitEncodedIntLength()
+        {
+            return 5;
         }
 
         public static void Write7BitEncodedInt(this Stream stream, int value)
@@ -62,6 +72,11 @@ namespace Akka.Interfaced.SlimSocket
             throw new FormatException("Too many bytes in what should have been a 7 bit encoded Int32.");
         }
 
+        public static int EstimateZigZag7BitEncodedIntLength()
+        {
+            return 5;
+        }
+
         public static void WriteZigZag7BitEncodedInt(this Stream stream, int value)
         {
             Write7BitEncodedInt(stream, (value << 1) ^ (value >> 31));
@@ -71,6 +86,13 @@ namespace Akka.Interfaced.SlimSocket
         {
             int value = Read7BitEncodedInt(stream);
             return (value >> 1) ^ (-(value & 1));
+        }
+
+        public static int EstimateStringLength(string value)
+        {
+            return
+                Estimate7BitEncodedIntLength() +
+                Encoding.UTF8.GetByteCount(value);
         }
 
         public static void WriteString(this Stream stream, string value)

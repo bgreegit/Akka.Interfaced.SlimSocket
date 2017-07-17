@@ -17,6 +17,7 @@ namespace Akka.Interfaced.SlimSocket.Client
         public Func<IChannel, string, IChannel> ChannelRouter { get; set; }
         public IPacketSerializer PacketSerializer { get; set; }
         public object UdpConfig { get; set; }
+        public SessionSettings SessionSettings { get; set; }
         public Func<IWebSocket> CreateWebSocket { get; set; }
 
         public ChannelFactory()
@@ -43,7 +44,7 @@ namespace Akka.Interfaced.SlimSocket.Client
                 if (parts.Length < 2)
                     throw new ArgumentException(nameof(address));
                 type = (ChannelType)Enum.Parse(typeof(ChannelType), parts[0], true);
-                if (type == ChannelType.Tcp || type == ChannelType.Udp)
+                if (type == ChannelType.Tcp || type == ChannelType.Udp || type == ChannelType.Session)
                     connectEndPoint = IPEndPointHelper.Parse(parts[1]);
                 else if (type == ChannelType.WebSocket)
                     connectUri = parts[1];
@@ -74,6 +75,11 @@ namespace Akka.Interfaced.SlimSocket.Client
                     var webSocketChannel = new WebSocketChannel(logger, connectUri, connectToken, PacketSerializer, createWebSocket);
                     InitializeChannel(webSocketChannel);
                     return webSocketChannel;
+
+                case ChannelType.Session:
+                    var sessionChannel = new SessionChannel(CreateChannelLogger(), connectEndPoint, connectToken, PacketSerializer, SessionSettings);
+                    InitializeChannel(sessionChannel);
+                    return sessionChannel;
 
                 default:
                     throw new InvalidOperationException("Unknown TransportType");

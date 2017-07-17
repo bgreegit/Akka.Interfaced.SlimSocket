@@ -65,6 +65,21 @@ namespace Akka.Interfaced.SlimSocket.Server
         }
 
         public TcpConnectionSettings Settings { get; set; }
+        public IPacketSerializer CustomPacketSerializer { get; set; }
+        public IPacketSerializer PacketSerializer
+        {
+            get
+            {
+                if (CustomPacketSerializer != null)
+                {
+                    return CustomPacketSerializer;
+                }
+                else
+                {
+                    return Settings.PacketSerializer;
+                }
+            }
+        }
         public int Id { get; set; }
 
         public DateTime LastReceiveTime
@@ -325,7 +340,7 @@ namespace Akka.Interfaced.SlimSocket.Server
             var readOffset = 0;
             while (true)
             {
-                var packetLen = Settings.PacketSerializer.PeekLength(stream);
+                var packetLen = PacketSerializer.PeekLength(stream);
                 if (packetLen == 0 || _receiveLength - readOffset < packetLen)
                 {
                     // 패킷 크기가 최대 크기보다 큰지 확인
@@ -364,7 +379,7 @@ namespace Akka.Interfaced.SlimSocket.Server
                 object packet;
                 try
                 {
-                    packet = Settings.PacketSerializer.Deserialize(stream);
+                    packet = PacketSerializer.Deserialize(stream);
                 }
                 catch (Exception e)
                 {
@@ -417,7 +432,7 @@ namespace Akka.Interfaced.SlimSocket.Server
                 object packet;
                 try
                 {
-                    packet = Settings.PacketSerializer.Deserialize(stream);
+                    packet = PacketSerializer.Deserialize(stream);
                 }
                 catch (Exception e)
                 {
@@ -486,7 +501,7 @@ namespace Akka.Interfaced.SlimSocket.Server
             if (!_issueCountFlag.Increment())
                 return;
 
-            var packetLen = Settings.PacketSerializer.EstimateLength(packet);
+            var packetLen = PacketSerializer.EstimateLength(packet);
             var tailSize = 0;
             if (packetLen > _sendBuffer.Length)
                 tailSize = packetLen - _sendBuffer.Length;
@@ -494,7 +509,7 @@ namespace Akka.Interfaced.SlimSocket.Server
             var stream = new HeadTailWriteStream(new ArraySegment<byte>(_sendBuffer), tailSize);
             try
             {
-                Settings.PacketSerializer.Serialize(stream, packet);
+                PacketSerializer.Serialize(stream, packet);
             }
             catch (Exception e)
             {

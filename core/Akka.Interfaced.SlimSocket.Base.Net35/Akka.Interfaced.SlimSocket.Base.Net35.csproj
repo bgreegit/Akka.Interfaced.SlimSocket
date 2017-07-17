@@ -92,6 +92,15 @@
     <Compile Include="..\Akka.Interfaced.SlimSocket.Base\SerializeExtensions.cs">
       <Link>SerializeExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Base\SessionCloseState.cs">
+      <Link>SessionCloseState.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Base\SessionPacket.cs">
+      <Link>SessionPacket.cs</Link>
+    </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Base\SessionPacketSerializer.cs">
+      <Link>SessionPacketSerializer.cs</Link>
+    </Compile>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Base\StreamLengthMarker.cs">
       <Link>StreamLengthMarker.cs</Link>
     </Compile>

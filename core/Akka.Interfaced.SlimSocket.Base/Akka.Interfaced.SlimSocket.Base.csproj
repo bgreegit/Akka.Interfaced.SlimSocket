@@ -71,6 +71,9 @@
     <Compile Include="Properties\AssemblyInfoGenerated.cs" />
     <Compile Include="ProtoBufMessageSerializer.cs" />
     <Compile Include="SerializeExtensions.cs" />
+    <Compile Include="SessionPacket.cs" />
+    <Compile Include="SessionPacketSerializer.cs" />
+    <Compile Include="SessionCloseState.cs" />
     <Compile Include="StreamLengthMarker.cs" />
   </ItemGroup>
   <ItemGroup>
