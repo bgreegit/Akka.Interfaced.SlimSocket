@@ -62,11 +62,19 @@ namespace Akka.Interfaced.SlimSocket.Client
         public override string ToString()
         {
             if (Status == TaskStatus.RanToCompletion)
+            {
                 return "Result: " + Result;
+            }
+
             if (Status == TaskStatus.Faulted)
+            {
                 return "Faulted: " + Exception;
+            }
+
             if (Status == TaskStatus.Canceled)
+            {
                 return "Canceled";
+            }
 
             return "Status: " + Status;
         }
@@ -74,7 +82,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         public bool TrySetCanceled()
         {
             if (IsCompleted)
+            {
                 return false;
+            }
 
             Status = TaskStatus.Canceled;
             _exception = new OperationCanceledException();
@@ -85,7 +95,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         public bool TrySetException(Exception e)
         {
             if (IsCompleted)
+            {
                 return false;
+            }
 
             Status = TaskStatus.Faulted;
             _exception = e;
@@ -96,7 +108,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         public bool TrySetResult(TResult result)
         {
             if (IsCompleted)
+            {
                 return false;
+            }
 
             Status = TaskStatus.RanToCompletion;
             _result = result;

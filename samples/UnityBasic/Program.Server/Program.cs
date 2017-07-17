@@ -18,7 +18,9 @@ namespace UnityBasic.Program.Server
         private static void Main(string[] args)
         {
             if (typeof(ICalculator) == null)
+            {
                 throw new Exception("Force interface module to be loaded");
+            }
 
             using (var system = ActorSystem.Create("MySystem", "akka.loglevel = DEBUG \n akka.actor.debug.lifecycle = on"))
             {

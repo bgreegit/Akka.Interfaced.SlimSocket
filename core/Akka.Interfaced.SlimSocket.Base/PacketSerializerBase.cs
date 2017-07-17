@@ -38,9 +38,13 @@ namespace Akka.Interfaced.SlimSocket
         public void SetSerializeWrapKey(int wrapKey, bool pending = false)
         {
             if (pending)
+            {
                 _serializeWrapPendingKey = wrapKey;
+            }
             else
+            {
                 _serializeWrapKey = wrapKey;
+            }
         }
 
         public void SetDeserializeWrapKey(int wrapKey)
@@ -114,7 +118,9 @@ namespace Akka.Interfaced.SlimSocket
             {
                 _serializeWrapKey += 1;
                 if (_serializeWrapKey == 0)
+                {
                     _serializeWrapKey = 1;
+                }
             }
 
             // Write Checksum
@@ -136,7 +142,9 @@ namespace Akka.Interfaced.SlimSocket
         {
             var len = (int)(stream.Length - stream.Position);
             if (len < 4)
+            {
                 return 0;
+            }
 
             // Peek Len
             var bytes = new byte[4];
@@ -163,12 +171,17 @@ namespace Akka.Interfaced.SlimSocket
             Decrypt(s0.Array, s0.Offset, s0.Array, s0.Offset, s0.Count, ref ctx);
             Decrypt(s1.Array, s1.Offset, s1.Array, s1.Offset, s1.Count, ref ctx);
             if (ctx.Hash != hash)
+            {
                 throw new IOException("Hash mismatch");
+            }
+
             if (_deserializeWrapKey != 0)
             {
                 _deserializeWrapKey += 1;
                 if (_deserializeWrapKey == 0)
+                {
                     _deserializeWrapKey = 1;
+                }
             }
 
             // Read PacketType, ActorId, RequestId
@@ -191,7 +204,9 @@ namespace Akka.Interfaced.SlimSocket
 
                     Type type = _data.TypeTable.GetType(messageTypeAlias);
                     if (type == null)
+                    {
                         throw new Exception("Cannot resolve message type. TypeAlias=" + messageTypeAlias);
+                    }
 
                     p.Message = Activator.CreateInstance(type);
                     _data.MessageSerializer.Deserialize(stream, p.Message, type, messageLen);
@@ -206,7 +221,9 @@ namespace Akka.Interfaced.SlimSocket
 
             var consumedLen = (int)(stream.Position - startPos);
             if (len + 4 != consumedLen)
+            {
                 throw new Exception("Mismatched length: " + (len + 4) + " " + consumedLen);
+            }
 
             return p;
         }

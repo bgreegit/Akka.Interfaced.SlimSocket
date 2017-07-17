@@ -120,13 +120,19 @@ namespace Akka.Interfaced.SlimSocket.Server
         public void Open()
         {
             if (_isDisposed)
+            {
                 throw new ObjectDisposedException(GetType().FullName);
+            }
 
             if (_isOpen)
+            {
                 throw new InvalidOperationException("Already Opened");
+            }
 
             if (Settings == null)
+            {
                 throw new InvalidOperationException("Settings");
+            }
 
             ProcessOpen();
 
@@ -149,44 +155,66 @@ namespace Akka.Interfaced.SlimSocket.Server
         public void Close()
         {
             if (_issueCountFlag.Flag)
+            {
                 return;
+            }
 
             if (_closeReason == 0)
+            {
                 _closeReason = 1;
+            }
 
             if (_logger != null)
+            {
                 _logger.Trace("Close connection");
+            }
 
             if (_socket != null)
+            {
                 _socket.Close();
+            }
 
             if (_issueCountFlag.SetFlag())
+            {
                 ProcessClose();
+            }
         }
 
         private void HandleSocketError(SocketError error)
         {
             if (_logger != null)
+            {
                 _logger.TraceFormat("HandleSocketError: {0}", error);
+            }
 
             if (_closeReason == 0)
+            {
                 _closeReason = (int)error;
+            }
 
             _socket.Close();
             if (_issueCountFlag.DecrementWithSetFlag())
+            {
                 ProcessClose();
+            }
         }
 
         private void HandleSerializeError(SerializeError error)
         {
             if (_logger != null)
+            {
                 _logger.WarnFormat("HandleSerializeError: {0}", error);
+            }
 
             if (SerializeErrored != null)
+            {
                 SerializeErrored(this, error);
+            }
 
             if (_isSendShutdown == false)
+            {
                 HandleSocketError(SocketError.NoData);
+            }
         }
 
         private void ProcessOpen()
@@ -211,7 +239,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             // Opened Event
 
             if (Opened != null)
+            {
                 Opened(this);
+            }
         }
 
         private void ProcessClose()
@@ -221,7 +251,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             // Closed Event
 
             if (Closed != null)
+            {
                 Closed(this, _closeReason);
+            }
 
             // Dispose Resources
 
@@ -263,7 +295,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void IssueReceive()
         {
             if (!_issueCountFlag.Increment())
+            {
                 return;
+            }
 
             if (_receiveLargeBuffer == null)
             {
@@ -281,7 +315,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             try
             {
                 if (!_socket.ReceiveAsync(_receiveArgs))
+                {
                     OnReceiveComplete(_socket, _receiveArgs);
+                }
             }
             catch (SocketException e)
             {
@@ -315,12 +351,16 @@ namespace Akka.Interfaced.SlimSocket.Server
             if (_receiveLargeBuffer == null)
             {
                 if (TryDeserializeNormalPacket(len) == false)
+                {
                     return;
+                }
             }
             else
             {
                 if (TryDeserializeLargePacket(len) == false)
+                {
                     return;
+                }
             }
 
             if (_issueCountFlag.Decrement())
@@ -399,7 +439,9 @@ namespace Akka.Interfaced.SlimSocket.Server
 
                 _lastReceiveTime = DateTime.UtcNow;
                 if (Received != null)
+                {
                     Received(this, packet);
+                }
 
                 readOffset += packetLen;
             }
@@ -454,7 +496,9 @@ namespace Akka.Interfaced.SlimSocket.Server
 
                 _lastReceiveTime = DateTime.UtcNow;
                 if (Received != null)
+                {
                     Received(this, packet);
+                }
 
                 var extraLen = len - leftLen;
                 if (extraLen > 0)
@@ -472,9 +516,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         public void Send(object packet)
         {
             if (packet == null)
+            {
                 throw new ArgumentNullException("packet");
+            }
+
             if (_isSendShutdown)
+            {
                 return;
+            }
 
             if (Interlocked.Increment(ref _sendCount) == 1)
             {
@@ -499,12 +548,16 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void StartSend(object packet)
         {
             if (!_issueCountFlag.Increment())
+            {
                 return;
+            }
 
             var packetLen = PacketSerializer.EstimateLength(packet);
             var tailSize = 0;
             if (packetLen > _sendBuffer.Length)
+            {
                 tailSize = packetLen - _sendBuffer.Length;
+            }
 
             var stream = new HeadTailWriteStream(new ArraySegment<byte>(_sendBuffer), tailSize);
             try
@@ -514,7 +567,10 @@ namespace Akka.Interfaced.SlimSocket.Server
             catch (Exception e)
             {
                 if (_logger != null)
+                {
                     _logger.WarnFormat("Exception raised in serializing", e);
+                }
+
                 HandleSerializeError(SerializeError.SerializeExceptionRaised);
                 return;
             }
@@ -558,7 +614,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             try
             {
                 if (!_socket.SendAsync(_sendArgs))
+                {
                     OnSendComplete(_socket, _sendArgs);
+                }
             }
             catch (SocketException e)
             {
@@ -592,7 +650,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 // Send 버퍼를 덜 보냈으면 나머지를 다시 전송 요청
 
                 if (!_issueCountFlag.Increment())
+                {
                     return;
+                }
 
                 IssueSend();
             }
@@ -601,7 +661,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 // Large 모드일 때 Large 버퍼의 내용을 Send 버퍼에 복사해 전송 요청
 
                 if (!_issueCountFlag.Increment())
+                {
                     return;
+                }
 
                 int len = Math.Min(_sendLargeLength - _sendLargeOffset, _sendBuffer.Length);
                 Debug.Assert(len > 0, "It should be large enough");
@@ -612,7 +674,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                     _sendBuffer, 0, len);
                 _sendLargeOffset += len;
                 if (_sendLargeOffset == _sendLargeLength)
+                {
                     _sendLargeBuffer = null;
+                }
 
                 _sendLength = len;
                 _sendOffset = 0;
@@ -630,9 +694,13 @@ namespace Akka.Interfaced.SlimSocket.Server
                     {
                     }
                     if (packet != null)
+                    {
                         StartSend(packet);
+                    }
                     else
+                    {
                         Close();
+                    }
                 }
             }
         }
@@ -640,7 +708,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         public void FlushAndClose()
         {
             if (Active == false || _isSendShutdown)
+            {
                 return;
+            }
 
             Volatile.Write(ref _isSendShutdown, true);
 

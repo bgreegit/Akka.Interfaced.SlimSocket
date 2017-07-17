@@ -17,7 +17,9 @@ namespace HelloWorld.Program.Client
             var entry = channel.CreateRef<EntryRef>(1);
             var greeter = entry.GetGreeter().Result;
             if (greeter == null)
+            {
                 throw new InvalidOperationException("Cannot obtain GreetingActor");
+            }
 
             // add observer
 

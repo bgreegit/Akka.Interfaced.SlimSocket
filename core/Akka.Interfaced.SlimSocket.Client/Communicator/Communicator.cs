@@ -36,7 +36,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         public void CloseAllChannels()
         {
             foreach (var channel in Channels.ToList())
+            {
                 channel.Close();
+            }
         }
 
         public void Update()
@@ -57,7 +59,9 @@ namespace Akka.Interfaced.SlimSocket.Client
             newChannel.StateChanged += (channel, state) =>
             {
                 if (state == ChannelStateType.Closed)
+                {
                     OnChannelClosed(channel);
+                }
             };
 
             Updated += newChannel.Update;

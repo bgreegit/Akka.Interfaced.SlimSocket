@@ -34,12 +34,16 @@ namespace Akka.Interfaced.SlimSocket
         protected override void WriteInternal(LogLevel level, object message, Exception exception)
         {
             if (_source.Active == false)
+            {
                 return;
+            }
 
             lock (_source.Lock)
             {
                 if (_source.Active == false)
+                {
                     return;
+                }
 
                 if (exception == null)
                 {

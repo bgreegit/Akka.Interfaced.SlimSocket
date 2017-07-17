@@ -48,7 +48,9 @@ namespace Akka.Interfaced.SlimSocket
         {
             var len = (int)(stream.Length - stream.Position);
             if (len < 4)
+            {
                 return 0;
+            }
 
             // Peek Len
             var bytes = new byte[4];

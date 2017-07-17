@@ -30,12 +30,16 @@ namespace Akka.Interfaced.SlimSocket.Client
             _webSocket.OnMessage += (sender, e) =>
             {
                 if (Received != null)
+                {
                     Received(this, e.RawData);
+                }
             };
             _webSocket.OnOpen += (sender, e) =>
             {
                 if (Connected != null)
+                {
                     Connected(this);
+                }
             };
             _webSocket.OnError += (sender, e) =>
             {
@@ -45,7 +49,9 @@ namespace Akka.Interfaced.SlimSocket.Client
             _webSocket.OnClose += (sender, e) =>
             {
                 if (Closed != null)
+                {
                     Closed(this, (int)e.Code);
+                }
             };
             _webSocket.ConnectAsync();
         }
@@ -53,13 +59,17 @@ namespace Akka.Interfaced.SlimSocket.Client
         void IWebSocket.Close()
         {
             if (_webSocket != null)
+            {
                 _webSocket.Close();
+            }
         }
 
         void IWebSocket.Send(byte[] buffer, int length, int offset)
         {
             if (_webSocket == null || _webSocket.ReadyState != WebSocketSharp.WebSocketState.Open)
+            {
                 return;
+            }
 
             var ms = new MemoryStream(buffer, offset, length, false);
             _webSocket.SendAsync(ms, length, (isSuccess) =>

@@ -16,9 +16,14 @@ namespace Akka.Interfaced.SlimSocket
         public void Serialize(Stream dest, Exception value)
         {
             if (dest == null)
+            {
                 throw new ArgumentNullException("dest");
+            }
+
             if (value == null)
+            {
                 throw new ArgumentNullException("value");
+            }
 
             var type = value.GetType();
             int typeAlias = _data.TypeTable.GetAlias(type);
@@ -27,9 +32,13 @@ namespace Akka.Interfaced.SlimSocket
             dest.WriteByte((byte)((typeAlias != 0 ? 1 : 0) | (typeSerializable ? 2 : 0)));
 
             if (typeAlias != 0)
+            {
                 dest.Write32BitEncodedInt(typeAlias);
+            }
             else
+            {
                 dest.WriteString(type.FullName);
+            }
 
             if (typeSerializable)
             {
@@ -42,7 +51,9 @@ namespace Akka.Interfaced.SlimSocket
         public Exception Deserialize(Stream source)
         {
             if (source == null)
+            {
                 throw new ArgumentNullException("source");
+            }
 
             Exception exception = null;
 

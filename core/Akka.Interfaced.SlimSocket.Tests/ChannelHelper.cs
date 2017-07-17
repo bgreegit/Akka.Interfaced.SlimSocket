@@ -47,13 +47,22 @@ namespace Akka.Interfaced.SlimSocket
 
             GatewayRef gateway = null;
             if (type == ChannelType.Tcp)
+            {
                 gateway = system.ActorOf(Props.Create(() => new Server.TcpGateway(initiator))).Cast<Server.GatewayRef>();
+            }
             else if (type == ChannelType.Udp)
+            {
                 gateway = system.ActorOf(Props.Create(() => new Server.UdpGateway(initiator))).Cast<Server.GatewayRef>();
+            }
             else if (type == ChannelType.WebSocket)
+            {
                 gateway = system.ActorOf(Props.Create(() => new Server.WebSocketGateway(initiator))).Cast<Server.GatewayRef>();
+            }
             else if (type == ChannelType.Session)
+            {
                 gateway = system.ActorOf(Props.Create(() => new Server.SessionGateway(initiator))).Cast<Server.GatewayRef>();
+            }
+
             gateway.Start().Wait();
 
             return gateway;
@@ -63,9 +72,13 @@ namespace Akka.Interfaced.SlimSocket
                                                           XunitOutputLogger.Source outputSource)
         {
             if (type == ChannelType.Tcp || type == ChannelType.Udp || type == ChannelType.Session)
+            {
                 return CreateClientChannel(name, $"{type}|{endPoint}|", outputSource);
+            }
             else
+            {
                 return CreateClientChannel(name, $"{type}|{uri}|", outputSource);
+            }
         }
 
         public static Client.IChannel CreateClientChannel(string name, string address, XunitOutputLogger.Source outputSource)

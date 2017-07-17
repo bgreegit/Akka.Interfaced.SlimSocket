@@ -315,7 +315,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         {
             var targetActor = actor.CastToIActorRef();
             if (targetActor == null)
+            {
                 throw new ArgumentNullException(nameof(actor));
+            }
 
             var target = ((IActorBoundGatewaySync)this).OpenChannel(targetActor, new TaggedType[] { actor.InterfaceType }, bindingFlags);
 

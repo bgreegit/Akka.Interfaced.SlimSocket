@@ -18,7 +18,10 @@ namespace Akka.Interfaced.SlimSocket.Server
             {
                 // used for sending an bound actor-ref to client.
                 if (value == null)
+                {
                     return null;
+                }
+
                 var target = ((BoundActorTarget)value);
                 return new SurrogateForIRequestTarget { Id = target.Id, Address = target.Address };
             }
@@ -29,7 +32,10 @@ namespace Akka.Interfaced.SlimSocket.Server
                 // not necessary because client cannot send IRequestTarget
                 // but implemented to keep this class symmetrical.
                 if (value == null)
+                {
                     return null;
+                }
+
                 return new BoundActorTarget(value.Id, value.Address);
             }
         }
@@ -41,7 +47,10 @@ namespace Akka.Interfaced.SlimSocket.Server
             public static SurrogateForINotificationChannel Convert(INotificationChannel value)
             {
                 if (value == null)
+                {
                     return null;
+                }
+
                 return new SurrogateForINotificationChannel();
             }
 

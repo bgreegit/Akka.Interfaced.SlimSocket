@@ -12,7 +12,10 @@ namespace UnityBasic.Program.Server
         Task ICounter.IncCounter(int delta)
         {
             if (delta <= 0)
+            {
                 throw new CounterException(7);
+            }
+
             _counter += delta;
             return Task.FromResult(true);
         }

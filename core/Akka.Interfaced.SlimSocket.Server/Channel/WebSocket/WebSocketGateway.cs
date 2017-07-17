@@ -80,7 +80,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             base.PostStop();
 
             if (_timeoutCanceler != null)
+            {
                 _timeoutCanceler.Cancel();
+            }
         }
 
         void IGatewaySync.Start()
@@ -113,7 +115,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             }
 
             if (stopListenOnly)
+            {
                 return;
+            }
 
             // stop all running channels
 
@@ -122,7 +126,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             if (_channelSet.Count > 0)
             {
                 foreach (var channel in _channelSet)
+                {
                     channel.Cast<ActorBoundChannelRef>().WithNoReply().Close();
+                }
             }
             else
             {
@@ -146,7 +152,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void Handle(AcceptMessage m)
         {
             if (_isStopped)
+            {
                 return;
+            }
 
             if (_initiator.CheckCreateChannel != null)
             {
@@ -182,7 +190,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void Handle(AcceptByTokenMessage m)
         {
             if (_isStopped)
+            {
                 return;
+            }
 
             if (_initiator.CheckCreateChannel != null)
             {
@@ -211,7 +221,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         {
             var targetActor = actor.CastToIActorRef();
             if (targetActor == null)
+            {
                 throw new ArgumentNullException(nameof(actor));
+            }
 
             var target = ((IActorBoundGatewaySync)this).OpenChannel(targetActor, new TaggedType[] { actor.InterfaceType }, bindingFlags);
 
@@ -224,10 +236,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         IRequestTarget IActorBoundGatewaySync.OpenChannel(IActorRef actor, TaggedType[] types, object tag, ActorBindingFlags bindingFlags)
         {
             if (actor == null)
+            {
                 throw new ArgumentNullException(nameof(actor));
+            }
 
             if (_isStopped)
+            {
                 return null;
+            }
 
             // create token and add to waiting list
 
@@ -264,7 +280,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             lock (_waitingMap)
             {
                 if (_waitingMap.TryGetValue(token, out item) == false)
+                {
                     return false;
+                }
 
                 _waitingMap.Remove(token);
             }

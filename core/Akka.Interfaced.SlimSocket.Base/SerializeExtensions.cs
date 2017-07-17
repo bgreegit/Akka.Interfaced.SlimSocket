@@ -63,11 +63,15 @@ namespace Akka.Interfaced.SlimSocket
                 ret = ret | ((b & 0x7f) << shift);
                 shift += 7;
                 if ((b & 0x80) == 0)
+                {
                     break;
+                }
             }
 
             if (len < 5)
+            {
                 return ret;
+            }
 
             throw new FormatException("Too many bytes in what should have been a 7 bit encoded Int32.");
         }

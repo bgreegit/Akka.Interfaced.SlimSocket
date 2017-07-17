@@ -25,7 +25,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             try
             {
                 if (!_socket.ConnectAsync(connectArgs))
+                {
                     OnConnectComplete(_socket, connectArgs);
+                }
             }
             catch (SocketException e)
             {
@@ -52,7 +54,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             var socket = _socket;
             _socket = null;
             if (Connected != null)
+            {
                 Connected(this, socket);
+            }
 
             if (_connectTcs != null)
             {
@@ -64,7 +68,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void HandleSocketError(SocketError error)
         {
             if (ConnectFailed != null)
+            {
                 ConnectFailed(this, error);
+            }
 
             if (_connectTcs != null)
             {

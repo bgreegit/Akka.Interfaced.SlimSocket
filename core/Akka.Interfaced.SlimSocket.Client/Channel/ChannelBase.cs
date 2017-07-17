@@ -47,13 +47,17 @@ namespace Akka.Interfaced.SlimSocket.Client
         protected bool SetState(ChannelStateType state)
         {
             if (_state == state)
+            {
                 return false;
+            }
 
             _state = state;
             StateChanged?.Invoke(this, state);
 
             if (state == ChannelStateType.Closed)
+            {
                 MakeAllRequestsGetException(new RequestChannelException());
+            }
 
             return true;
         }
@@ -176,7 +180,9 @@ namespace Akka.Interfaced.SlimSocket.Client
             {
                 requestId = ++_lastRequestId;
                 if (requestId <= 0)
+                {
                     requestId = _lastRequestId = 1;
+                }
 
                 var added = _responseWaitingItems.TryAdd(requestId, new ResponseWaitingItem
                 {
@@ -184,9 +190,13 @@ namespace Akka.Interfaced.SlimSocket.Client
                     {
                         var completionSource = ((ISlimTaskCompletionSource<TReturn>)taskCompletionSource);
                         if (response.Exception != null)
+                        {
                             completionSource.TrySetException(response.Exception);
+                        }
                         else
+                        {
                             completionSource.TrySetResult((TReturn)response.ReturnPayload?.Value);
+                        }
                     },
                     CancelHandler = (taskCompletionSource) =>
                     {
@@ -197,7 +207,9 @@ namespace Akka.Interfaced.SlimSocket.Client
                 });
 
                 if (added)
+                {
                     break;
+                }
             }
 
             // Set timeout

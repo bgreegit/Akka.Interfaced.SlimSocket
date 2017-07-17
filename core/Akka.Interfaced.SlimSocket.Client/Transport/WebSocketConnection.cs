@@ -53,7 +53,9 @@ namespace Akka.Interfaced.SlimSocket.Client
             _packetSerializer = serializer;
 
             if (_createWebSocket == null)
+            {
                 throw new ArgumentNullException("webSocketCreator");
+            }
         }
 
         public void Connect(string uri)
@@ -112,7 +114,9 @@ namespace Akka.Interfaced.SlimSocket.Client
             _state = WebSocketState.Connected;
 
             if (Connected != null)
+            {
                 Connected(this);
+            }
         }
 
         private void OnClosed(object sender, int code)
@@ -120,9 +124,14 @@ namespace Akka.Interfaced.SlimSocket.Client
             _state = WebSocketState.Closed;
 
             if (_closeReason == 0)
+            {
                 _closeReason = code;
+            }
+
             if (Closed != null)
+            {
                 Closed(this, _closeReason);
+            }
         }
 
         private void OnReceived(object sender, byte[] data)
@@ -149,7 +158,9 @@ namespace Akka.Interfaced.SlimSocket.Client
                     var packet = _packetSerializer.Deserialize(ms);
                     _lastReceiveTime = DateTime.UtcNow;
                     if (Received != null)
+                    {
                         Received(this, packet);
+                    }
                 }
                 catch (Exception e)
                 {

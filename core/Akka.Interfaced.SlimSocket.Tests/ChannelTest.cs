@@ -91,7 +91,9 @@ namespace Akka.Interfaced.SlimSocket
             if (disposing)
             {
                 lock (_outputSource.Lock)
+                {
                     _outputSource.Active = false;
+                }
             }
 
             base.Dispose(disposing);
@@ -424,7 +426,9 @@ namespace Akka.Interfaced.SlimSocket
         private Server.GatewayRef CreatePrimaryGateway(ChannelType type, Action<Server.GatewayInitiator> initiatorSetup = null)
         {
             if (type == ChannelType.WebSocket)
+            {
                 NetAclChecker.AddAddress(_testListenUri0);
+            }
 
             return ChannelHelper.CreateGateway(Sys, type, "1", _testEndPoint, _testListenUri0, _testConnectUri0, _outputSource, initiator =>
             {
@@ -444,7 +448,9 @@ namespace Akka.Interfaced.SlimSocket
         private Server.GatewayRef CreateSecondaryGateway(ChannelType type, Action<Server.GatewayInitiator> initiatorSetup = null)
         {
             if (type == ChannelType.WebSocket)
+            {
                 NetAclChecker.AddAddress(_testListenUri1);
+            }
 
             return ChannelHelper.CreateGateway(Sys, type, "2", new IPEndPoint(_testEndPoint.Address, _testEndPoint.Port + 1),
                                                _testListenUri1, _testConnectUri1, _outputSource,
@@ -474,7 +480,9 @@ namespace Akka.Interfaced.SlimSocket
             };
 
             if (connected)
+            {
                 await channel.ConnectAsync();
+            }
 
             return channel;
         }
@@ -484,7 +492,9 @@ namespace Akka.Interfaced.SlimSocket
             var channel = ChannelHelper.CreateClientChannel("2", address, _outputSource);
 
             if (connected)
+            {
                 await channel.ConnectAsync();
+            }
 
             return channel;
         }

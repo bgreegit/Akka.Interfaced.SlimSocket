@@ -26,7 +26,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         public override Task<bool> ConnectAsync()
         {
             if (State != ChannelStateType.Closed)
+            {
                 throw new InvalidOperationException("Should be closed to connect.");
+            }
 
             var tcs = _connectTcs = TaskFactory.Create<bool>();
             _logger?.Info("Connect.");

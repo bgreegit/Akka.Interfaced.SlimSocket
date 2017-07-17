@@ -34,9 +34,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         public void Listen(string uriPrefix, int listenCount = 1)
         {
             if (listenCount < 1)
+            {
                 throw new ArgumentException(nameof(listenCount));
+            }
+
             if (_listener != null)
+            {
                 throw new InvalidOperationException("Already Listening");
+            }
 
             // uriPrefix ex) "http://+:80/ws/"
             _listener = new HttpListener();
@@ -75,10 +80,14 @@ namespace Akka.Interfaced.SlimSocket.Server
             }
 
             if (_listener != null && _isStop == false)
+            {
                 IssueAccept();
+            }
 
             if (context != null)
+            {
                 ProcessContext(context);
+            }
         }
 
         private async void ProcessContext(HttpListenerContext context)
@@ -147,7 +156,9 @@ namespace Akka.Interfaced.SlimSocket.Server
         {
             var listener = _listener;
             if (listener == null)
+            {
                 return;
+            }
 
             _listener = null;
             listener.Close();

@@ -40,15 +40,21 @@ namespace Akka.Interfaced.SlimSocket.Server
         {
             var tcpConnection = connection as TcpConnection;
             if (tcpConnection != null)
+            {
                 return tcpConnection.RemoteEndPoint;
+            }
 
             var udpConnection = connection as NetConnection;
             if (udpConnection != null)
+            {
                 return udpConnection.RemoteEndPoint;
+            }
 
             var webSocketConnection = connection as WebSocketConnection;
             if (webSocketConnection != null)
+            {
                 return webSocketConnection.RemoteEndPoint;
+            }
 
             return null;
         }

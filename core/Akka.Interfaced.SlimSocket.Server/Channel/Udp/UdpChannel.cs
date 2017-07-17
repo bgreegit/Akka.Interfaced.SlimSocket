@@ -33,7 +33,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             _tag = tag;
 
             if (bindingActor != null)
+            {
                 BindActor(bindingActor.Item1, bindingActor.Item2.Select(t => new BoundType(t)), bindingActor.Item3);
+            }
         }
 
         protected override void PreStart()
@@ -190,7 +192,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 {
                     var observer = (InterfacedObserver)o;
                     if (observer != null)
+                    {
                         observer.Channel = new AkkaReceiverNotificationChannel(_self);
+                    }
                 });
             }
 
@@ -209,7 +213,10 @@ namespace Akka.Interfaced.SlimSocket.Server
                 var workStream = new MemoryStream(msg.ReadBytes(msg.LengthBytes), 0, msg.LengthBytes, false, true);
                 var packet = _packetSerializer.Deserialize(workStream) as Packet;
                 if (packet != null)
+                {
                     OnConnectionReceive(packet);
+                }
+
                 return true;
             }
 

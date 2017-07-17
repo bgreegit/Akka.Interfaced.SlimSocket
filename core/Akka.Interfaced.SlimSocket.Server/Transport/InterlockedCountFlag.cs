@@ -28,9 +28,14 @@ namespace Akka.Interfaced.SlimSocket.Server
                 var v = _value;
                 var vNew = (v & 0x7FFFFFFE) + 1;
                 if (v == vNew)
+                {
                     return false;
+                }
+
                 if (Interlocked.CompareExchange(ref _value, vNew, v) == v)
+                {
                     return vNew == 1;
+                }
             }
         }
 
@@ -41,10 +46,15 @@ namespace Akka.Interfaced.SlimSocket.Server
             {
                 var v = _value;
                 if ((v & 1) == 1)
+                {
                     return false;
+                }
+
                 var vNew = v + 2;
                 if (Interlocked.CompareExchange(ref _value, vNew, v) == v)
+                {
                     return true;
+                }
             }
         }
 
@@ -55,10 +65,15 @@ namespace Akka.Interfaced.SlimSocket.Server
             {
                 var v = _value;
                 if (v < 2)
+                {
                     throw new InvalidOperationException("Already Zero");
+                }
+
                 var vNew = v - 2;
                 if (Interlocked.CompareExchange(ref _value, vNew, v) == v)
+                {
                     return vNew == 1;
+                }
             }
         }
 
@@ -69,10 +84,15 @@ namespace Akka.Interfaced.SlimSocket.Server
             {
                 var v = _value;
                 if (v < 2)
+                {
                     throw new InvalidOperationException("Already Zero");
+                }
+
                 var vNew = ((v - 2) & 0x7FFFFFFE) + 1;
                 if (Interlocked.CompareExchange(ref _value, vNew, v) == v)
+                {
                     return vNew == 1;
+                }
             }
         }
     }

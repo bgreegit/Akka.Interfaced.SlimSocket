@@ -69,7 +69,10 @@ namespace Akka.Interfaced.SlimSocket.Client
                     if (_outOfOrderQueue != null)
                     {
                         foreach (var message in _outOfOrderQueue)
+                        {
                             InvokeInternal(message.Item2);
+                        }
+
                         _outOfOrderQueue.Clear();
                     }
                 }
@@ -90,16 +93,23 @@ namespace Akka.Interfaced.SlimSocket.Client
             {
                 var expectedNotification = _lastNotificationId + 1;
                 if (expectedNotification <= 0)
+                {
                     expectedNotification = 1;
+                }
 
                 if (expectedNotification != notificationId)
                 {
                     // keep outOfOrderQueue in order
                     var fi = _outOfOrderQueue.FindIndex(i => notificationId < i.Item1);
                     if (fi != -1)
+                    {
                         _outOfOrderQueue.Insert(fi, Tuple.Create(notificationId, message));
+                    }
                     else
+                    {
                         _outOfOrderQueue.Add(Tuple.Create(notificationId, message));
+                    }
+
                     return;
                 }
 
@@ -118,11 +128,15 @@ namespace Akka.Interfaced.SlimSocket.Client
                 {
                     var expectedId = _lastNotificationId + 1;
                     if (expectedId <= 0)
+                    {
                         expectedId = 1;
+                    }
 
                     var item = _outOfOrderQueue[0];
                     if (expectedId != item.Item1)
+                    {
                         break;
+                    }
 
                     _outOfOrderQueue.RemoveAt(0);
                     _lastNotificationId = expectedId;
@@ -137,13 +151,18 @@ namespace Akka.Interfaced.SlimSocket.Client
             if (_isPending)
             {
                 if (_pendingMessages == null)
+                {
                     _pendingMessages = new List<IInvokable>();
+                }
+
                 _pendingMessages.Add(message);
             }
             else
             {
                 foreach (var observer in _observers)
+                {
                     message.Invoke(observer);
+                }
             }
         }
 
@@ -151,13 +170,17 @@ namespace Akka.Interfaced.SlimSocket.Client
         {
             List<IInvokable> pendingMessages = _pendingMessages;
             if (pendingMessages == null || pendingMessages.Count == 0)
+            {
                 return;
+            }
 
             _pendingMessages = null;
             foreach (var message in pendingMessages)
             {
                 foreach (var observer in _observers)
+                {
                     message.Invoke(observer);
+                }
             }
         }
     }

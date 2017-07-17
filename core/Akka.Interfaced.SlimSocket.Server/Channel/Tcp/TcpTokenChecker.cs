@@ -48,10 +48,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         protected override void PostStop()
         {
             if (_connection != null)
+            {
                 _connection.Close();
+            }
 
             if (_timeoutCanceler != null)
+            {
                 _timeoutCanceler.Cancel();
+            }
 
             base.PostStop();
         }

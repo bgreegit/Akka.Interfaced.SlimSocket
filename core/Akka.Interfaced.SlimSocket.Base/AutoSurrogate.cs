@@ -22,10 +22,14 @@ namespace Akka.Interfaced.SlimSocket
             foreach (var type in GetTypesSafely(assembly))
             {
                 if (type.IsClass == false && type.IsValueType == false)
+                {
                     continue;
+                }
 
                 if (Attribute.GetCustomAttribute(type, typeof(ProtoBuf.ProtoContractAttribute)) == null)
+                {
                     continue;
+                }
 
                 var loweredTypeName = type.Name.ToLower();
                 if (loweredTypeName.Contains("surrogatedirectives"))
@@ -36,7 +40,10 @@ namespace Akka.Interfaced.SlimSocket
                         if (sourceType != null)
                         {
                             if (typeModel.CanSerialize(sourceType))
+                            {
                                 continue;
+                            }
+
                             try
                             {
                                 typeModel.Add(sourceType, false).SetSurrogate(field.FieldType);
@@ -53,7 +60,10 @@ namespace Akka.Interfaced.SlimSocket
                     if (sourceType != null)
                     {
                         if (typeModel.CanSerialize(sourceType))
+                        {
                             continue;
+                        }
+
                         try
                         {
                             typeModel.Add(sourceType, false).SetSurrogate(type);
@@ -87,9 +97,14 @@ namespace Akka.Interfaced.SlimSocket
                 if (parameters.Length == 1 && m.ReturnType.Name != "Void" && m.ReturnType != type)
                 {
                     if (Attribute.GetCustomAttribute(m, typeof(ProtoBuf.ProtoConverterAttribute)) != null)
+                    {
                         return m.ReturnType;
+                    }
+
                     if (m.Name == "op_Implicit" || m.Name == "op_Explicit")
+                    {
                         return m.ReturnType;
+                    }
                 }
             }
             return null;

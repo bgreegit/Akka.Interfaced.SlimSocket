@@ -42,14 +42,24 @@ namespace Akka.Interfaced.SlimSocket.Client
             {
                 var parts = address.Split('|'); // type|endpoint|{token}
                 if (parts.Length < 2)
+                {
                     throw new ArgumentException(nameof(address));
+                }
+
                 type = (ChannelType)Enum.Parse(typeof(ChannelType), parts[0], true);
                 if (type == ChannelType.Tcp || type == ChannelType.Udp || type == ChannelType.Session)
+                {
                     connectEndPoint = IPEndPointHelper.Parse(parts[1]);
+                }
                 else if (type == ChannelType.WebSocket)
+                {
                     connectUri = parts[1];
+                }
                 else
+                {
                     throw new ArgumentException(nameof(address));
+                }
+
                 connectToken = parts.Length > 2 ? parts[2] : null;
             }
 
@@ -70,7 +80,9 @@ namespace Akka.Interfaced.SlimSocket.Client
 
                     var createWebSocket = CreateWebSocket;
                     if (createWebSocket == null)
+                    {
                         createWebSocket = () => { return new WebSocket(logger); };
+                    }
 
                     var webSocketChannel = new WebSocketChannel(logger, connectUri, connectToken, PacketSerializer, createWebSocket);
                     InitializeChannel(webSocketChannel);

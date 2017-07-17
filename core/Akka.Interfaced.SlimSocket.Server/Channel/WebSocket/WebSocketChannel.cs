@@ -211,7 +211,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 {
                     var observer = (InterfacedObserver)o;
                     if (observer != null)
+                    {
                         observer.Channel = new AkkaReceiverNotificationChannel(_self);
+                    }
                 });
             }
 

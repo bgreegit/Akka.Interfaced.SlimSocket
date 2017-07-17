@@ -15,7 +15,10 @@ namespace Akka.Interfaced.SlimSocket.Server
         {
             _head = head;
             if (tailSize > 0)
+            {
                 _tail = new ArraySegment<byte>(new byte[tailSize]);
+            }
+
             _size = head.Count + tailSize;
         }
 
@@ -48,7 +51,10 @@ namespace Akka.Interfaced.SlimSocket.Server
             set
             {
                 if (value < 0)
+                {
                     throw new ArgumentOutOfRangeException("value");
+                }
+
                 _pos = (int)value;
             }
         }
@@ -95,15 +101,22 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void EnsureCapacity(int size)
         {
             if (size <= _size)
+            {
                 return;
+            }
 
             int requiredTailSize = size - _head.Count;
             int orgTailSize = _tail != null ? _tail.Value.Count : 0;
             int newTailSize = requiredTailSize;
             if (newTailSize < 0x100)
+            {
                 newTailSize = 0x100;
+            }
+
             if (newTailSize < orgTailSize * 2)
+            {
                 newTailSize = orgTailSize * 2;
+            }
 
             if (_tail != null)
             {
@@ -138,7 +151,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 if (count <= 8)
                 {
                     for (int i = 0; i < count; i++)
+                    {
                         _head.Array[headOffset + i] = buffer[offset + i];
+                    }
                 }
                 else
                 {
@@ -153,7 +168,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 if (count <= 8)
                 {
                     for (int i = 0; i < count; i++)
+                    {
                         _tail.Value.Array[tailOffset + i] = buffer[offset + i];
+                    }
                 }
                 else
                 {
@@ -172,14 +189,18 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             _pos = posEnd;
             if (_length < posEnd)
+            {
                 _length = posEnd;
+            }
         }
 
         public void GetBuffers(int pos, int length, out ArraySegment<byte> segment0, out ArraySegment<byte> segment1)
         {
             var posEnd = pos + length;
             if (pos < 0 || posEnd > _length)
+            {
                 throw new ArgumentOutOfRangeException();
+            }
 
             if (pos < _head.Count && posEnd <= _head.Count)
             {

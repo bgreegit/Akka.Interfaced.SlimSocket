@@ -32,14 +32,20 @@ namespace Akka.Interfaced.SlimSocket
             if (values.Length <= 2)
             { // ipv4 or hostname
                 if (values.Length == 1)
+                {
                     // no port is specified, default
                     port = defaultport;
+                }
                 else
+                {
                     port = GetPort(values[1]);
+                }
 
                 // try to use the address as IPv4, otherwise get hostname
                 if (!IPAddress.TryParse(values[0], out ipaddy))
+                {
                     ipaddy = GetIPfromHost(values[0]);
+                }
             }
             else if (values.Length > 2)
             { // ipv6
@@ -61,7 +67,9 @@ namespace Akka.Interfaced.SlimSocket
             }
 
             if (port == -1)
+            {
                 throw new ArgumentException(string.Format("No port specified: '{0}'", endpointstring));
+            }
 
             return new IPEndPoint(ipaddy, port);
         }
@@ -83,7 +91,9 @@ namespace Akka.Interfaced.SlimSocket
             var hosts = Dns.GetHostAddresses(p);
 
             if (hosts == null || hosts.Length == 0)
+            {
                 throw new ArgumentException(string.Format("Host not found: {0}", p));
+            }
 
             return hosts[0];
         }

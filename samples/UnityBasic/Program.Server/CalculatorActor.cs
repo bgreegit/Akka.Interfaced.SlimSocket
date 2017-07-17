@@ -11,9 +11,15 @@ namespace UnityBasic.Program.Server
         Task<string> ICalculator.Concat(string a, string b)
         {
             if (a == null)
+            {
                 throw new ArgumentNullException("a");
+            }
+
             if (b == null)
+            {
                 throw new ArgumentNullException("b");
+            }
+
             return Task.FromResult(a + b);
         }
 

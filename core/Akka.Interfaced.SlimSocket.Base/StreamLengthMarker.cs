@@ -16,7 +16,9 @@ namespace Akka.Interfaced.SlimSocket
             _endPosition = 0;
 
             if (moveToNext)
+            {
                 _stream.Seek(4, SeekOrigin.Current);
+            }
         }
 
         public long StartPosition
@@ -43,7 +45,9 @@ namespace Akka.Interfaced.SlimSocket
             _stream.Write(lenBytes, 0, lenBytes.Length);
 
             if (recoverStreamPosition)
+            {
                 _stream.Seek(_endPosition, SeekOrigin.Begin);
+            }
         }
     }
 }

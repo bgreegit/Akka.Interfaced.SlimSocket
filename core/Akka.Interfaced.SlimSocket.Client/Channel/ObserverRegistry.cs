@@ -57,7 +57,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         {
             var observer = GetObserver(packet.ActorId);
             if (observer == null)
+            {
                 return false;
+            }
 
             var notificationMessage = new NotificationMessage
             {
@@ -67,9 +69,13 @@ namespace Akka.Interfaced.SlimSocket.Client
             };
 
             if (EventPoster != null)
+            {
                 EventPoster(_ => observer.Channel.Notify(notificationMessage));
+            }
             else
+            {
                 observer.Channel.Notify(notificationMessage);
+            }
 
             return true;
         }

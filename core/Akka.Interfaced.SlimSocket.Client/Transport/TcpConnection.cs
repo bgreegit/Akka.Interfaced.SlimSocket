@@ -107,7 +107,9 @@ namespace Akka.Interfaced.SlimSocket.Client
             ProcessRecv();
 
             if (Connected != null)
+            {
                 Connected(this);
+            }
         }
 
         public void Close(int reason = 0)
@@ -121,7 +123,9 @@ namespace Akka.Interfaced.SlimSocket.Client
                 _state = TcpState.Closed;
 
                 if (Closed != null)
+                {
                     Closed(this, reason);
+                }
             }
         }
 
@@ -134,12 +138,17 @@ namespace Akka.Interfaced.SlimSocket.Client
                 if (_sendPacketQueue.Count > 0)
                 {
                     lock (_sendPacketQueue)
+                    {
                         _sendPacketQueue.Add(null);
+                    }
                 }
                 else
                 {
                     lock (_sendPacketQueue)
+                    {
                         _sendPacketQueue.Add(null);
+                    }
+
                     ProcessSend();
                 }
             }
@@ -157,10 +166,14 @@ namespace Akka.Interfaced.SlimSocket.Client
             }
 
             lock (_sendPacketQueue)
+            {
                 _sendPacketQueue.Add(packet);
+            }
 
             if (_sendProcessing == false)
+            {
                 ProcessSend();
+            }
 
             return true;
         }
@@ -297,14 +310,18 @@ namespace Akka.Interfaced.SlimSocket.Client
                         return;
                     }
                     if (length == 0 || _recvBufLen < length)
+                    {
                         break;
+                    }
 
                     try
                     {
                         var packet = _packetSerializer.Deserialize(ms);
                         _lastReceiveTime = DateTime.UtcNow;
                         if (Received != null)
+                        {
                             Received(this, packet);
+                        }
                     }
                     catch (Exception e)
                     {

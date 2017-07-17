@@ -91,10 +91,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         public void Open()
         {
             if (Settings == null)
+            {
                 throw new InvalidOperationException("Settings");
+            }
 
             if (Interlocked.CompareExchange(ref _state, 1, 0) != 0)
+            {
                 throw new InvalidOperationException("Already Opened");
+            }
 
             ProcessOpen();
             StartReceive();
@@ -108,23 +112,31 @@ namespace Akka.Interfaced.SlimSocket.Server
         private async Task ProcessClose(WebSocketCloseStatus closeStatus)
         {
             if (Interlocked.CompareExchange(ref _state, 2, 1) != 1)
+            {
                 return;
+            }
 
             try
             {
                 // Closed Event
 
                 if (Closed != null)
+                {
                     Closed(this, (int)closeStatus);
+                }
 
                 // Dispose Resources
 
                 if (_socket != null)
                 {
                     if (_socket.State == WebSocketState.Open)
+                    {
                         await _socket.CloseAsync(closeStatus, string.Empty, CancellationToken.None);
+                    }
                     else
+                    {
                         await _socket.CloseOutputAsync(closeStatus, string.Empty, CancellationToken.None);
+                    }
                 }
             }
             catch (Exception e)
@@ -136,10 +148,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         private void HandleSerializeError(SerializeError error)
         {
             if (_logger != null)
+            {
                 _logger.WarnFormat("HandleSerializeError: {0}", error);
+            }
 
             if (SerializeErrored != null)
+            {
                 SerializeErrored(this, error);
+            }
         }
 
         public void Dispose()
@@ -168,7 +184,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             // Opened Event
 
             if (Opened != null)
+            {
                 Opened(this);
+            }
         }
 
         private async void StartReceive()
@@ -248,7 +266,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                     {
                         var closeStatus = HandleReceivedMessage();
                         if (closeStatus.HasValue)
+                        {
                             return closeStatus.Value;
+                        }
                     }
                     else
                     {
@@ -312,7 +332,9 @@ namespace Akka.Interfaced.SlimSocket.Server
 
                 _lastReceiveTime = DateTime.UtcNow;
                 if (Received != null)
+                {
                     Received(this, packet);
+                }
             }
 
             return null;
@@ -321,9 +343,14 @@ namespace Akka.Interfaced.SlimSocket.Server
         public async void Send(object packet)
         {
             if (packet == null)
+            {
                 throw new ArgumentNullException("packet");
+            }
+
             if (_state != 1)
+            {
                 return;
+            }
 
             if (Interlocked.Increment(ref _sendCount) == 1)
             {
@@ -352,7 +379,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                 finally
                 {
                     if (closeStatus.HasValue)
+                    {
                         await ProcessClose(closeStatus.Value);
+                    }
                 }
             }
             else
@@ -367,7 +396,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             {
                 var closeStatus = await SendEachPacket(firstPacket);
                 if (closeStatus.HasValue)
+                {
                     return closeStatus;
+                }
             }
 
             // try queued packets
@@ -384,7 +415,9 @@ namespace Akka.Interfaced.SlimSocket.Server
                     {
                         var closeStatus = await SendEachPacket(packet);
                         if (closeStatus.HasValue)
+                        {
                             return closeStatus;
+                        }
                     }
                     else
                     {
@@ -403,7 +436,9 @@ namespace Akka.Interfaced.SlimSocket.Server
             var packetLen = Settings.PacketSerializer.EstimateLength(packet);
             var tailSize = 0;
             if (packetLen > _sendBuffer.Length)
+            {
                 tailSize = packetLen - _sendBuffer.Length;
+            }
 
             using (var stream = new HeadTailWriteStream(new ArraySegment<byte>(_sendBuffer), tailSize))
             {
@@ -414,7 +449,10 @@ namespace Akka.Interfaced.SlimSocket.Server
                 catch (Exception e)
                 {
                     if (_logger != null)
+                    {
                         _logger.WarnFormat("Exception raised in serializing", e);
+                    }
+
                     HandleSerializeError(SerializeError.SerializeExceptionRaised);
                     return WebSocketCloseStatus.InternalServerError;
                 }

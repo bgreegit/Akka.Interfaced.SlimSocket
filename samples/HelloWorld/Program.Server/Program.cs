@@ -16,7 +16,9 @@ namespace HelloWorld.Program.Server
         private static void Main(string[] args)
         {
             if (typeof(IGreeter) == null)
+            {
                 throw new Exception("Force interface module to be loaded");
+            }
 
             using (var system = ActorSystem.Create("MySystem", "akka.loglevel = DEBUG \n akka.actor.debug.lifecycle = on"))
             {
@@ -78,9 +80,14 @@ namespace HelloWorld.Program.Server
         public static void AddNetAclAddress(string address, string domain = null, string user = null)
         {
             if (string.IsNullOrEmpty(domain))
+            {
                 domain = Environment.UserDomainName;
+            }
+
             if (string.IsNullOrEmpty(user))
+            {
                 user = Environment.UserName;
+            }
 
             string args = string.Format(@"http add urlacl url={0} user={1}\{2}", address, domain, user);
 
