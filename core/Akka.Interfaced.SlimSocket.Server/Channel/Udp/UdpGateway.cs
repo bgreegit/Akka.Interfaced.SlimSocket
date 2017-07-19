@@ -169,11 +169,11 @@ namespace Akka.Interfaced.SlimSocket.Server
                     _waitingMap.Remove(m.Token);
                 }
 
-                channel = Context.ActorOf(Props.Create(() => new UdpChannel(_initiator, m.SenderConnection, item.Tag, item.BindingActor)));
+                channel = Context.ActorOf(Props.Create<UdpChannel>(new object[] { _initiator, m.SenderConnection, item.Tag, item.BindingActor }));
             }
             else
             {
-                channel = Context.ActorOf(Props.Create(() => new UdpChannel(_initiator, m.SenderConnection, null, null)));
+                channel = Context.ActorOf(Props.Create<UdpChannel>(new object[] { _initiator, m.SenderConnection, null, null }));
             }
 
             if (channel == null)

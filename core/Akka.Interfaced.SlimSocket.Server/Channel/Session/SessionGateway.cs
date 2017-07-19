@@ -252,7 +252,14 @@ namespace Akka.Interfaced.SlimSocket.Server
             var sessionId = IssueSessionId();
             var tag = waitingItem?.Tag;
             var bindingActor = waitingItem?.BindingActor;
-            var channel = Context.ActorOf(Props.Create(() => new SessionChannel(_initiator, sessionId, sessionLine.RemoteEndPoint, tag, bindingActor)));
+            var channel = Context.ActorOf(Props.Create<SessionChannel>(new object[]
+            {
+                _initiator,
+                sessionId,
+                sessionLine.RemoteEndPoint,
+                tag,
+                bindingActor
+            }));
             if (channel == null)
             {
                 _logger?.TraceFormat("Deny a connection. (EndPoint={0})", sessionLine.RemoteEndPoint);

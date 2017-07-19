@@ -168,11 +168,11 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             if (_initiator.TokenRequired)
             {
-                Context.ActorOf(Props.Create(() => new WebSocketTokenChecker(_initiator, this, m.AcceptedWebSocket)));
+                Context.ActorOf(Props.Create<WebSocketTokenChecker>(new object[] { _initiator, this, m.AcceptedWebSocket }));
             }
             else
             {
-                var channel = Context.ActorOf(Props.Create(() => new WebSocketChannel(_initiator, m.AcceptedWebSocket, null)));
+                var channel = Context.ActorOf(Props.Create< WebSocketChannel>(new object[] { _initiator, m.AcceptedWebSocket, null }));
                 if (channel == null)
                 {
                     _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.AcceptedWebSocket.RemoteEndPoint);
@@ -203,7 +203,7 @@ namespace Akka.Interfaced.SlimSocket.Server
                 }
             }
 
-            var channel = Context.ActorOf(Props.Create(() => new WebSocketChannel(_initiator, m.Connection, m.Tag, m.BindingActor)));
+            var channel = Context.ActorOf(Props.Create<WebSocketChannel>(new object[] { _initiator, m.Connection, m.Tag, m.BindingActor }));
             if (channel == null)
             {
                 _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.Connection.RemoteEndPoint);

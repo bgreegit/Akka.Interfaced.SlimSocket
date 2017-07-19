@@ -162,11 +162,11 @@ namespace Akka.Interfaced.SlimSocket.Server
 
             if (_initiator.TokenRequired)
             {
-                Context.ActorOf(Props.Create(() => new TcpTokenChecker(_initiator, this, m.Socket)));
+                Context.ActorOf(Props.Create<TcpTokenChecker>(new object[] { _initiator, this, m.Socket }));
             }
             else
             {
-                var channel = Context.ActorOf(Props.Create(() => new TcpChannel(_initiator, m.Socket, null)));
+                var channel = Context.ActorOf(Props.Create<TcpChannel>(new object[] { _initiator, m.Socket, null }));
                 if (channel == null)
                 {
                     _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.Socket.RemoteEndPoint);
@@ -197,7 +197,7 @@ namespace Akka.Interfaced.SlimSocket.Server
                 }
             }
 
-            var channel = Context.ActorOf(Props.Create(() => new TcpChannel(_initiator, m.Connection, m.Tag, m.BindingActor)));
+            var channel = Context.ActorOf(Props.Create<TcpChannel>(new object[] { _initiator, m.Connection, m.Tag, m.BindingActor }));
             if (channel == null)
             {
                 _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.Connection.RemoteEndPoint);
