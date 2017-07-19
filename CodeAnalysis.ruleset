@@ -1,10 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<RuleSet Name="Code Analysis Ruleset for Solution" ToolsVersion="14.0">
+<RuleSet Name="Code Analysis Ruleset for Solution" ToolsVersion="15.0">
   <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
-    <Rule Id="CA1001" Action="Warning" />
-    <Rule Id="CA1009" Action="Warning" />
-    <Rule Id="CA1016" Action="Warning" />
-    <Rule Id="CA1033" Action="Warning" />
     <Rule Id="CA1049" Action="Warning" />
     <Rule Id="CA1060" Action="Warning" />
     <Rule Id="CA1061" Action="Warning" />
@@ -58,7 +54,6 @@
     <Rule Id="CA2232" Action="Warning" />
     <Rule Id="CA2235" Action="Warning" />
     <Rule Id="CA2236" Action="Warning" />
-    <Rule Id="CA2237" Action="Warning" />
     <Rule Id="CA2238" Action="Warning" />
     <Rule Id="CA2240" Action="Warning" />
     <Rule Id="CA2241" Action="Warning" />
@@ -149,7 +144,6 @@
     <Rule Id="SA1302" Action="Error" />
     <Rule Id="SA1303" Action="Error" />
     <Rule Id="SA1304" Action="Error" />
-    <Rule Id="SA1305" Action="None" />
     <Rule Id="SA1306" Action="Error" />
     <Rule Id="SA1307" Action="Error" />
     <Rule Id="SA1308" Action="None" />
@@ -233,6 +227,5 @@
     <Rule Id="SA1652" Action="None" />
     <Rule Id="SX1101" Action="Error" />
     <Rule Id="SX1309" Action="Error" />
-    <Rule Id="SX1309S" Action="None" />
   </Rules>
 </RuleSet>
