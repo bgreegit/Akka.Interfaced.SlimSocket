@@ -235,7 +235,7 @@ namespace Akka.Interfaced.SlimSocket.Client
                 oldLine.Close();
             }
 
-            _rebindElapsed = null;
+            _rebindElapsed = TimeSpan.Zero;
             _rebindCoolTimeElapsed = null;
         }
 
