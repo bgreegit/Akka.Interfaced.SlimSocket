@@ -7,6 +7,7 @@ namespace Akka.Interfaced.SlimSocket.Client
     public class TcpSessionLine : IReliableSessionLine
     {
         private ILog _logger;
+        private IPEndPoint _localEndPoint;
         private IPEndPoint _remoteEndPoint;
         private TcpConnection _tcpConnection;
         private IPacketSerializer _packetSerializer;
@@ -70,6 +71,9 @@ namespace Akka.Interfaced.SlimSocket.Client
         // BEWARE: CALLED BY WORK THREAD
         private void OnConnect(object sender)
         {
+            _isHandshaking = true;
+            _localEndPoint = _tcpConnection.LocalEndPoint as IPEndPoint;
+
             if (_lineIndex == 0)
             {
                 var sq = new SqSessionCreate()
@@ -77,8 +81,6 @@ namespace Akka.Interfaced.SlimSocket.Client
                     Token = _token
                 };
                 _tcpConnection.SendPacket(sq);
-
-                _logger?.Trace($"SqSessionCreate sent.");
             }
             else
             {
@@ -89,11 +91,7 @@ namespace Akka.Interfaced.SlimSocket.Client
                     ClientMessageAck = _clientMessageAck
                 };
                 _tcpConnection.SendPacket(sq);
-
-                _logger?.Trace($"SqSessionRebind sent.");
             }
-
-            _isHandshaking = true;
         }
 
         // BEWARE: CALLED BY WORK THREAD

@@ -33,6 +33,9 @@ namespace Akka.Interfaced.SlimSocket.Client
 
         private readonly IPacketSerializer _packetSerializer;
 
+        internal EndPoint LocalEndPoint => _localEndPoint;
+        internal EndPoint RemoteEndPoint => _remoteEndPoint;
+
         public TcpState State
         {
             get { return _state; }
