@@ -377,16 +377,23 @@ namespace Akka.Interfaced.SlimSocket.Server
             }
             else if (packet is SrEcho)
             {
-                var p = (SrEcho)packet;
-                if (_aliveCheckWaitTime.HasValue)
+                RunTask(() =>
                 {
-                    var waitTicks = (int)(_aliveCheckWaitTime.Value.Ticks >> 32);
-                    if (waitTicks == p.Ticks)
+                    var p = (SrEcho)packet;
+                    if (_aliveCheckWaitTime.HasValue)
                     {
-                        _aliveCheckTime = DateTime.UtcNow;
-                        _aliveCheckWaitTime = null;
+                        var waitTicks = (int)(_aliveCheckWaitTime.Value.Ticks >> 32);
+                        if (waitTicks == p.Ticks)
+                        {
+                            _aliveCheckTime = DateTime.UtcNow;
+                            _aliveCheckWaitTime = null;
+                        }
+                        else
+                        {
+                            _logger?.Trace($"waitTicks not matched wt={waitTicks} t={p.Ticks}");
+                        }
                     }
-                }
+                }, _self);
             }
             else
             {
