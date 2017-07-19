@@ -1,0 +1,8 @@
+{
+	"ChannelType": "Tcp",
+	"RemoteIp": "192.168.0.10",
+	"RemotePort": 21001,
+	"RequestInterval": 100,
+	"RequestLength": 16,
+	"ChannelCount": 4000
+}
