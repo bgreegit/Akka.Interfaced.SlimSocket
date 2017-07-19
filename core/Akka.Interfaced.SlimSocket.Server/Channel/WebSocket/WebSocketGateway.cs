@@ -172,7 +172,7 @@ namespace Akka.Interfaced.SlimSocket.Server
             }
             else
             {
-                var channel = Context.ActorOf(Props.Create< WebSocketChannel>(new object[] { _initiator, m.AcceptedWebSocket, null }));
+                var channel = Context.ActorOf(Props.Create<WebSocketChannel>(new object[] { _initiator, m.AcceptedWebSocket, null }));
                 if (channel == null)
                 {
                     _logger?.TraceFormat("Deny a connection. (EndPoint={0})", m.AcceptedWebSocket.RemoteEndPoint);
