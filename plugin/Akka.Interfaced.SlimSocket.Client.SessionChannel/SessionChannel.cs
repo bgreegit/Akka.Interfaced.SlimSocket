@@ -54,10 +54,15 @@ namespace Akka.Interfaced.SlimSocket.Client.SessionChannel
         public SessionChannel(ILog logger, IPEndPoint remoteEndPoint, string token, IPacketSerializer packetSerializer, SessionSettings settings)
             : base(logger)
         {
+            if (settings == null)
+            {
+                throw new ArgumentException("settings is null", nameof(settings));
+            }
+
             _remoteEndPoint = remoteEndPoint;
             _token = token;
             _packetSerializer = packetSerializer;
-            _settings = settings ?? throw new ArgumentException("settings is null", nameof(settings));
+            _settings = settings;
             _sessionPacketSerializer = new SessionPacketSerializer(_packetSerializer);
         }
 
