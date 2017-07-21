@@ -14,27 +14,17 @@ namespace Echo.Program.Client
         private DateTime _lastUpdate;
 
         public event Action<TimeSpan> Update;
-        public bool IsShowUpdateTime;
 
         private void OnTimer(object state)
         {
             var now = DateTime.UtcNow;
             var elapsed = now - _lastUpdate;
-            if (IsShowUpdateTime)
-            {
-                Console.WriteLine($"OnTimer elapsed={(int)elapsed.TotalMilliseconds}");
-            }
-
             if (elapsed < _interval)
             {
                 return;
             }
 
             _lastUpdate += _interval;
-            if (IsShowUpdateTime)
-            {
-                Console.WriteLine($"OnTimer now={DateTime.UtcNow.ToString("MM:ss.fff")}");
-            }
             Update?.Invoke(_interval);
         }
 
@@ -84,42 +74,8 @@ namespace Echo.Program.Client
             ChannelUpdate -= channel.Update;
         }
     }
-
-    internal class EchoSender : Updator
-    {
-        private EchoRef _echo;
-        private byte[] _data;
-        private Statistics _statistics;
-        private Stopwatch _stopwatch = new Stopwatch();
-
-        public EchoSender(EchoRef echo, byte[] data, Statistics statistics)
-        {
-            _echo = echo;
-            _data = data;
-            _statistics = statistics;
-        }
-
-        public void Start(int interval)
-        {
-            Update += SendEcho;
-            StartUpdate(interval);
-        }
-
-        private async void SendEcho(TimeSpan span)
-        {
-            //_stopwatch.Start();
-            await _echo.Echo(_data);
-            //var elapsed = _stopwatch.ElapsedTicks;
-            _statistics.IncSendCount(1);
-            //_stopwatch.Reset();
-            //if (IsShowUpdateTime)
-            //{
-            //    Console.WriteLine($"SendEcho now={DateTime.UtcNow.ToString("MM:ss.fff")}");
-            //}
-        }
-    }
-
-    internal class EchoSender2
+    
+    internal class EchoSender
     {
         private EchoRef _echo;
         private byte[] _data;
@@ -128,7 +84,7 @@ namespace Echo.Program.Client
         private Stopwatch _stopwatch = new Stopwatch();
         private CancellationTokenSource _cts = new CancellationTokenSource(); 
 
-        public EchoSender2(EchoRef echo, byte[] data, Statistics statistics, int waitDelay)
+        public EchoSender(EchoRef echo, byte[] data, Statistics statistics, int waitDelay)
         {
             _echo = echo;
             _data = data;

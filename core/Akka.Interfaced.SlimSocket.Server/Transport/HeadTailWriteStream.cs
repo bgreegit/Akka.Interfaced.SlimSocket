@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Akka.Interfaced.SlimSocket.Server
 {
-    internal class HeadTailWriteStream : Stream
+    public class HeadTailWriteStream : Stream
     {
         private ArraySegment<byte> _head;
         private ArraySegment<byte>? _tail;

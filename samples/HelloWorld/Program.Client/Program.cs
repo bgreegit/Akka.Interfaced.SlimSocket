@@ -1,9 +1,12 @@
-﻿using System;
+﻿using Akka.Interfaced.SlimSocket.Client;
+using Akka.Interfaced.SlimSocket.Client.SessionChannel;
+using Akka.Interfaced.SlimSocket.Client.TcpChannel;
+using Akka.Interfaced.SlimSocket.Client.UdpChannel;
+using Akka.Interfaced.SlimSocket.Client.WebSocketChannel;
+using HelloWorld.Interface;
+using System;
 using System.Net;
 using System.Threading.Tasks;
-using Akka.Interfaced.SlimSocket;
-using Akka.Interfaced.SlimSocket.Client;
-using HelloWorld.Interface;
 
 namespace HelloWorld.Program.Client
 {
@@ -48,28 +51,42 @@ namespace HelloWorld.Program.Client
     {
         private static void Main(string[] args)
         {
-            int port = 5001;
+            var port = 5001;
             var channelFactory = new ChannelFactory
             {
-                Type = ChannelType.Tcp,
-                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port),
-                ConnectUri = string.Format("ws://localhost:{0}/ws/", port + 1),
                 CreateChannelLogger = () => null,
                 CreateObserverRegistry = () => new ObserverRegistry(),
-                PacketSerializer = PacketSerializer.CreatePacketSerializer(),
+                PacketSerializer = PacketSerializer.CreatePacketSerializer()
             };
+            var driver = new TestDriver();
 
             // TCP
-            var driver = new TestDriver();
-            driver.Run(channelFactory.Create()).Wait();
+            var tcpChannelType = new TcpClientChannelType()
+            {
+                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+            };
+            driver.Run(channelFactory.CreateByType(tcpChannelType)).Wait();
 
             // UDP
-            channelFactory.Type = ChannelType.Udp;
-            driver.Run(channelFactory.Create()).Wait();
+            var udpChannelType = new UdpClientChannelType()
+            {
+                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port),
+            };
+            driver.Run(channelFactory.CreateByType(udpChannelType)).Wait();
+
+            // Session
+            var sessionChannelType = new SessionClientChannelType()
+            {
+                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port + 1),
+            };
+            driver.Run(channelFactory.CreateByType(sessionChannelType)).Wait();
 
             // WebSocket
-            channelFactory.Type = ChannelType.WebSocket;
-            driver.Run(channelFactory.Create()).Wait();
+            var webSocketChannelType = new WebSocketClientChannelType()
+            {
+                ConnectUri = string.Format("ws://localhost:{0}/ws/", port + 2),
+            };
+            driver.Run(channelFactory.CreateByType(webSocketChannelType)).Wait();
         }
     }
 }

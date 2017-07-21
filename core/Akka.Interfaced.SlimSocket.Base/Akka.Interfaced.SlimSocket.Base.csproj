@@ -62,6 +62,7 @@
     <Compile Include="AutoSurrogate.cs" />
     <Compile Include="ChannelType.cs" />
     <Compile Include="ExceptionSerializer.cs" />
+    <Compile Include="IChannelType.cs" />
     <Compile Include="IMessageSerializer.cs" />
     <Compile Include="IPacketSerializer.cs" />
     <Compile Include="IPEndPointHelper.cs" />

@@ -28,7 +28,7 @@ namespace Akka.Interfaced.SlimSocket.Client
 
         public IChannel CreateChannel(string address = null)
         {
-            var newChannel = ChannelFactory.Create(address);
+            var newChannel = ChannelFactory.CreateByAddress(address);
             OnChannelCreated(newChannel);
             return newChannel;
         }

@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace Akka.Interfaced.SlimSocket.Server
 {
-    internal struct InterlockedCountFlag
+    public struct InterlockedCountFlag
     {
         // LSB 1비트를 플래그로 나머지를 카운터로 사용
         private int _value;

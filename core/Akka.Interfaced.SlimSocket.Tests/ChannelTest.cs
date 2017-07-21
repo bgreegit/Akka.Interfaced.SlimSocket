@@ -7,6 +7,10 @@ using Akka.Actor;
 using Akka.Interfaced.SlimServer;
 using Xunit;
 using Xunit.Abstractions;
+using Akka.Interfaced.SlimSocket.Server.WebSocketChannel;
+using Akka.Interfaced.SlimSocket.Server.SessionChannel;
+using Akka.Interfaced.SlimSocket.Server.TcpChannel;
+using Akka.Interfaced.SlimSocket.Server.UdpChannel;
 
 namespace Akka.Interfaced.SlimSocket
 {
@@ -100,15 +104,15 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientConnectToSlimServer(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientConnectToSlimServer(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -119,28 +123,28 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientFailedToConnectToSlimServer(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientFailedToConnectToSlimServer(string channelType)
         {
             // Act
-            var exception = await Record.ExceptionAsync(() => CreatePrimaryClientChannelAsync(type));
+            var exception = await Record.ExceptionAsync(() => CreatePrimaryClientChannelAsync(channelType));
 
             // Assert
             Assert.NotNull(exception);
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientFailedToRequestWithClosedChannel(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientFailedToRequestWithClosedChannel(string channelType)
         {
             // Arrange
-            var clientChannel = await CreatePrimaryClientChannelAsync(type, false);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType, false);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -151,15 +155,15 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientGetExceptionOfPendingRequestAfterChannelClosed(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientGetExceptionOfPendingRequestAfterChannelClosed(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -170,15 +174,15 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientGetSecondBoundActor(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientGetSecondBoundActor(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -192,15 +196,15 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientGetsNotificationMessages(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientGetsNotificationMessages(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -219,16 +223,16 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientConnectToSlimServerWithToken(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientConnectToSlimServerWithToken(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var gateway2nd = CreateSecondaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var gateway2nd = CreateSecondaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -242,16 +246,16 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task SlimClientConnectToSlimServerWithToken_Timeout(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task SlimClientConnectToSlimServerWithToken_Timeout(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var gateway2nd = CreateSecondaryGateway(type, i => { i.TokenTimeout = TimeSpan.FromSeconds(0.1); });
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var gateway2nd = CreateSecondaryGateway(channelType, i => { i.TokenTimeout = TimeSpan.FromSeconds(0.1); });
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
             clientChannel.ChannelRouter = null;
 
@@ -259,22 +263,22 @@ namespace Akka.Interfaced.SlimSocket
             var greeter = await entry.GetGreeterOnAnotherChannel();
             await Task.Delay(_sec1);
             var greeterTarget = (BoundActorTarget)(((GreeterWithObserverRef)greeter).Target);
-            var exception = await Record.ExceptionAsync(() => CreateSecondaryClientChannelAsync(greeterTarget.Address));
+            var exception = await Record.ExceptionAsync(() => CreateSecondaryClientChannelAsync(channelType, greeterTarget.Address));
 
             // Assert
             Assert.NotNull(exception);
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task CloseChannel_ChannelClosed(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task CloseChannel_ChannelClosed(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
             Assert.Equal("Test", await entry.WithTimeout(_sec1).Echo("Test"));
             var serverChannel = (await ActorSelection(gateway.CastToIActorRef().Path + "/*").ResolveOne(_sec1)).Cast<ActorBoundChannelRef>();
@@ -288,21 +292,21 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp, 0)]
-        [InlineData(ChannelType.Tcp, 2)]
-        [InlineData(ChannelType.Udp, 0)]
-        [InlineData(ChannelType.Udp, 2)]
-        [InlineData(ChannelType.WebSocket, 0)]
-        [InlineData(ChannelType.WebSocket, 2)]
-        [InlineData(ChannelType.Session, 0)]
-        [InlineData(ChannelType.Session, 2)]
-        public async Task GatewayStop_AllChannelClosed_ThenStop(ChannelType type, int clientCount)
+        [InlineData(TcpChannelType.TypeName, 0)]
+        [InlineData(TcpChannelType.TypeName, 2)]
+        [InlineData(UdpChannelType.TypeName, 0)]
+        [InlineData(UdpChannelType.TypeName, 2)]
+        [InlineData(WebSocketChannelType.TypeName, 0)]
+        [InlineData(WebSocketChannelType.TypeName, 2)]
+        [InlineData(SessionChannelType.TypeName, 0)]
+        [InlineData(SessionChannelType.TypeName, 2)]
+        public async Task GatewayStop_AllChannelClosed_ThenStop(string channelType, int clientCount)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
+            var gateway = CreatePrimaryGateway(channelType);
             for (int i = 0; i < clientCount; i++)
             {
-                var clientChannel = await CreatePrimaryClientChannelAsync(type);
+                var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
                 var entry = clientChannel.CreateRef<EntryRef>();
                 Assert.Equal("Test:" + i, await entry.WithTimeout(_sec1).Echo("Test:" + i));
             }
@@ -316,22 +320,22 @@ namespace Akka.Interfaced.SlimSocket
         }
 
         [Theory]
-        [InlineData(ChannelType.Tcp)]
-        [InlineData(ChannelType.Udp)]
-        [InlineData(ChannelType.WebSocket)]
-        [InlineData(ChannelType.Session)]
-        public async Task GatewayStopListen_StopListeningAndKeepActiveConnections(ChannelType type)
+        [InlineData(TcpChannelType.TypeName)]
+        [InlineData(UdpChannelType.TypeName)]
+        [InlineData(WebSocketChannelType.TypeName)]
+        [InlineData(SessionChannelType.TypeName)]
+        public async Task GatewayStopListen_StopListeningAndKeepActiveConnections(string channelType)
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(type);
-            var clientChannel = await CreatePrimaryClientChannelAsync(type);
+            var gateway = CreatePrimaryGateway(channelType);
+            var clientChannel = await CreatePrimaryClientChannelAsync(channelType);
             var entry = clientChannel.CreateRef<EntryRef>();
             Assert.Equal("Test", await entry.WithTimeout(_sec1).Echo("Test"));
             var serverChannel = (await ActorSelection(gateway.CastToIActorRef().Path + "/*").ResolveOne(_sec1)).Cast<ActorBoundChannelRef>();
 
             // Act & Assert (Stop listening and further channels cannot be established)
             await gateway.WithTimeout(_sec5).Stop(true);
-            var exception = await Record.ExceptionAsync(() => CreatePrimaryClientChannelAsync(type));
+            var exception = await Record.ExceptionAsync(() => CreatePrimaryClientChannelAsync(channelType));
             Assert.NotNull(exception);
             Assert.Equal("Test2", await entry.WithTimeout(_sec1).Echo("Test2"));
 
@@ -345,8 +349,8 @@ namespace Akka.Interfaced.SlimSocket
         public async Task CloseServerSessionLine_ThenLineRebound()
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(ChannelType.Session);
-            var clientChannel = await CreatePrimaryClientChannelAsync(ChannelType.Session);
+            var gateway = CreatePrimaryGateway(SessionChannelType.TypeName);
+            var clientChannel = await CreatePrimaryClientChannelAsync(SessionChannelType.TypeName);
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act & Assert
@@ -357,9 +361,9 @@ namespace Akka.Interfaced.SlimSocket
         public async Task CloseServerSessionChannelGracefully_ThenClientClosedGracefully()
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(ChannelType.Session);
-            var clientChannel = await CreatePrimaryClientChannelAsync(ChannelType.Session);
-            var sessionClientChannel = clientChannel as Client.SessionChannel;
+            var gateway = CreatePrimaryGateway(SessionChannelType.TypeName);
+            var clientChannel = await CreatePrimaryClientChannelAsync(SessionChannelType.TypeName);
+            var sessionClientChannel = clientChannel as Client.SessionChannel.SessionChannel;
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act & Assert
@@ -377,9 +381,9 @@ namespace Akka.Interfaced.SlimSocket
         public async Task CloseClientSessionChannelGracefully_ThenServerClosedGracefully()
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(ChannelType.Session);
-            var clientChannel = await CreatePrimaryClientChannelAsync(ChannelType.Session);
-            var sessionClientChannel = clientChannel as Client.SessionChannel;
+            var gateway = CreatePrimaryGateway(SessionChannelType.TypeName);
+            var clientChannel = await CreatePrimaryClientChannelAsync(SessionChannelType.TypeName);
+            var sessionClientChannel = clientChannel as Client.SessionChannel.SessionChannel;
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -404,9 +408,9 @@ namespace Akka.Interfaced.SlimSocket
         public async Task CheckClientSessionChannelSrttUpdated()
         {
             // Arrange
-            var gateway = CreatePrimaryGateway(ChannelType.Session);
-            var clientChannel = await CreatePrimaryClientChannelAsync(ChannelType.Session);
-            var sessionClientChannel = clientChannel as Client.SessionChannel;
+            var gateway = CreatePrimaryGateway(SessionChannelType.TypeName);
+            var clientChannel = await CreatePrimaryClientChannelAsync(SessionChannelType.TypeName);
+            var sessionClientChannel = clientChannel as Client.SessionChannel.SessionChannel;
             var entry = clientChannel.CreateRef<EntryRef>();
 
             // Act
@@ -423,14 +427,14 @@ namespace Akka.Interfaced.SlimSocket
             Assert.True(sessionClientChannel.SmoothedRoundTripTicks.HasValue);
         }
 
-        private Server.GatewayRef CreatePrimaryGateway(ChannelType type, Action<Server.GatewayInitiator> initiatorSetup = null)
+        private Server.GatewayRef CreatePrimaryGateway(string channelType, Action<Server.GatewayInitiator> initiatorSetup = null)
         {
-            if (type == ChannelType.WebSocket)
+            if (channelType == WebSocketChannelType.TypeName)
             {
                 NetAclChecker.AddAddress(_testListenUri0);
             }
 
-            return ChannelHelper.CreateGateway(Sys, type, "1", _testEndPoint, _testListenUri0, _testConnectUri0, _outputSource, initiator =>
+            return ChannelHelper.CreateGateway(Sys, channelType, "1", _testEndPoint, _testListenUri0, _testConnectUri0, _outputSource, initiator =>
             {
                 initiator.GatewayInitialized = a => { _environment.Gateway = a.Cast<ActorBoundGatewayRef>(); };
                 initiator.CreateInitialActors = (IActorContext context, object socket) => new[]
@@ -445,14 +449,14 @@ namespace Akka.Interfaced.SlimSocket
             });
         }
 
-        private Server.GatewayRef CreateSecondaryGateway(ChannelType type, Action<Server.GatewayInitiator> initiatorSetup = null)
+        private Server.GatewayRef CreateSecondaryGateway(string channelType, Action<Server.GatewayInitiator> initiatorSetup = null)
         {
-            if (type == ChannelType.WebSocket)
+            if (channelType == WebSocketChannelType.TypeName)
             {
                 NetAclChecker.AddAddress(_testListenUri1);
             }
 
-            return ChannelHelper.CreateGateway(Sys, type, "2", new IPEndPoint(_testEndPoint.Address, _testEndPoint.Port + 1),
+            return ChannelHelper.CreateGateway(Sys, channelType, "2", new IPEndPoint(_testEndPoint.Address, _testEndPoint.Port + 1),
                                                _testListenUri1, _testConnectUri1, _outputSource,
             initiator =>
             {
@@ -463,15 +467,15 @@ namespace Akka.Interfaced.SlimSocket
             });
         }
 
-        private async Task<Client.IChannel> CreatePrimaryClientChannelAsync(ChannelType type, bool connected = true)
+        private async Task<Client.IChannel> CreatePrimaryClientChannelAsync(string channelType, bool connected = true)
         {
-            var channel = ChannelHelper.CreateClientChannel("1", type, _testEndPoint, _testConnectUri0, _outputSource);
+            var channel = ChannelHelper.CreateClientChannel("1", channelType, _testEndPoint, _testConnectUri0, _outputSource);
 
             channel.ChannelRouter = (_, address) =>
             {
                 try
                 {
-                    return CreateSecondaryClientChannelAsync(address, true).Result;
+                    return CreateSecondaryClientChannelAsync(channelType, address, true).Result;
                 }
                 catch (Exception)
                 {
@@ -487,9 +491,9 @@ namespace Akka.Interfaced.SlimSocket
             return channel;
         }
 
-        private async Task<Client.IChannel> CreateSecondaryClientChannelAsync(string address, bool connected = true)
+        private async Task<Client.IChannel> CreateSecondaryClientChannelAsync(string channelType, string address, bool connected = true)
         {
-            var channel = ChannelHelper.CreateClientChannel("2", address, _outputSource);
+            var channel = ChannelHelper.CreateClientChannel("2", channelType, address, _outputSource);
 
             if (connected)
             {

@@ -10,6 +10,10 @@ using Akka.Interfaced.SlimSocket;
 using Akka.Interfaced.SlimSocket.Server;
 using Common.Logging;
 using UnityBasic.Interface;
+using Akka.Interfaced.SlimSocket.Server.TcpChannel;
+using Akka.Interfaced.SlimSocket.Server.UdpChannel;
+using Akka.Interfaced.SlimSocket.Server.SessionChannel;
+using Akka.Interfaced.SlimSocket.Server.WebSocketChannel;
 
 namespace UnityBasic.Program.Server
 {
@@ -27,8 +31,8 @@ namespace UnityBasic.Program.Server
                 DeadRequestProcessingActor.Install(system);
 
                 var gateways = new List<GatewayRef>();
-                gateways.AddRange(StartGateway(system, ChannelType.Tcp, 5001, 5002));
-                gateways.AddRange(StartGateway(system, ChannelType.Udp, 5001, 5002));
+                gateways.AddRange(StartGateway(system, TcpChannelType.TypeName, 5001, 5002));
+                gateways.AddRange(StartGateway(system, UdpChannelType.TypeName, 5001, 5002));
 
                 Console.WriteLine("Please enter key to quit.");
                 Console.ReadLine();
@@ -37,54 +41,127 @@ namespace UnityBasic.Program.Server
             }
         }
 
-        private static GatewayRef[] StartGateway(ActorSystem system, ChannelType type, int port, int port2)
+        private static void InitializeGateway1Initiator(GatewayInitiator initiator, EntryActorEnvironment environment)
+        {
+            initiator.GatewayLogger = LogManager.GetLogger($"Gateway1");
+            initiator.GatewayInitialized = a => { environment.Gateway = a.Cast<ActorBoundGatewayRef>(); };
+            initiator.CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep})");
+            initiator.PacketSerializer = PacketSerializer.CreatePacketSerializer();
+            initiator.CreateInitialActors = (context, connection) => new[]
+            {
+                Tuple.Create(context.ActorOf(Props.Create(() => new EntryActor(environment, context.Self.Cast<ActorBoundChannelRef>()))),
+                                new TaggedType[] { typeof(IEntry) },
+                                (ActorBindingFlags)0)
+            };
+        }
+
+        private static void InitializeGateway2Initiator(GatewayInitiator initiator, EntryActorEnvironment environment)
+        {
+            initiator.GatewayLogger = LogManager.GetLogger($"Gateway2");
+            initiator.TokenRequired = true;
+            initiator.GatewayInitialized = a => { environment.Gateway2nd = a.Cast<ActorBoundGatewayRef>(); };
+            initiator.CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel2({ep})");
+            initiator.PacketSerializer = PacketSerializer.CreatePacketSerializer();
+        }
+
+        private static GatewayRef[] StartGateway(ActorSystem system, string channelType, int port, int port2)
         {
             var serializer = PacketSerializer.CreatePacketSerializer();
             var environment = new EntryActorEnvironment();
 
             // First gateway
 
-            var initiator = new GatewayInitiator
+            GatewayRef gateway1 = null;
+            if (channelType == TcpChannelType.TypeName)
             {
-                ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
-                GatewayLogger = LogManager.GetLogger("Gateway"),
-                GatewayInitialized = a => { environment.Gateway = a.Cast<ActorBoundGatewayRef>(); },
-                CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep}"),
-                TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
-                PacketSerializer = serializer,
-                CreateInitialActors = (context, connection) => new[]
+                var initiator = new TcpGatewayInitiator()
                 {
-                    Tuple.Create(context.ActorOf(Props.Create(() => new EntryActor(environment, context.Self.Cast<ActorBoundChannelRef>()))),
-                                 new TaggedType[] { typeof(IEntry) },
-                                 (ActorBindingFlags)0)
-                }
-            };
-
-            var gateway = (type == ChannelType.Tcp)
-                ? system.ActorOf(Props.Create(() => new TcpGateway(initiator))).Cast<GatewayRef>()
-                : system.ActorOf(Props.Create(() => new UdpGateway(initiator))).Cast<GatewayRef>();
-            gateway.Start().Wait();
+                    ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                };
+                InitializeGateway1Initiator(initiator, environment);
+                gateway1 = system.ActorOf(Props.Create(() => new TcpGateway(initiator))).Cast<GatewayRef>();
+            }
+            else if (channelType == UdpChannelType.TypeName)
+            {
+                var initiator = new UdpGatewayInitiator()
+                {
+                    ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
+                };
+                InitializeGateway1Initiator(initiator, environment);
+                gateway1 = system.ActorOf(Props.Create(() => new UdpGateway(initiator))).Cast<GatewayRef>();
+            }
+            else if (channelType == SessionChannelType.TypeName)
+            {
+                var initiator = new SessionGatewayInitiator()
+                {
+                    ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
+                    SessionSettings = new SessionSettings(),
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                };
+                InitializeGateway1Initiator(initiator, environment);
+                gateway1 = system.ActorOf(Props.Create(() => new SessionGateway(initiator))).Cast<GatewayRef>();
+            }
+            else if (channelType == WebSocketChannelType.TypeName)
+            {
+                var initiator = new WebSocketGatewayInitiator()
+                {
+                    ListenUri = string.Format("http://+:{0}/ws/", port),
+                };
+                InitializeGateway1Initiator(initiator, environment);
+                gateway1 = system.ActorOf(Props.Create(() => new WebSocketGateway(initiator))).Cast<GatewayRef>();
+            }
+            gateway1.Start().Wait();
 
             // Second gateway
 
-            var initiator2 = new GatewayInitiator
+            GatewayRef gateway2 = null;
+            if (channelType == TcpChannelType.TypeName)
             {
-                ListenEndPoint = new IPEndPoint(IPAddress.Any, port2),
-                ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port2),
-                GatewayLogger = LogManager.GetLogger("Gateway2"),
-                TokenRequired = true,
-                GatewayInitialized = a => { environment.Gateway2nd = a.Cast<ActorBoundGatewayRef>(); },
-                CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel2({ep}"),
-                TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
-                PacketSerializer = serializer,
-            };
-
-            var gateway2 = (type == ChannelType.Tcp)
-                ? system.ActorOf(Props.Create(() => new TcpGateway(initiator2))).Cast<GatewayRef>()
-                : system.ActorOf(Props.Create(() => new UdpGateway(initiator2))).Cast<GatewayRef>();
+                var initiator = new TcpGatewayInitiator()
+                {
+                    ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
+                    ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port2),
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                };
+                InitializeGateway2Initiator(initiator, environment);
+                gateway2 = system.ActorOf(Props.Create(() => new TcpGateway(initiator))).Cast<GatewayRef>();
+            }
+            else if (channelType == UdpChannelType.TypeName)
+            {
+                var initiator = new UdpGatewayInitiator()
+                {
+                    ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
+                    ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port2),
+                };
+                InitializeGateway2Initiator(initiator, environment);
+                gateway2 = system.ActorOf(Props.Create(() => new UdpGateway(initiator))).Cast<GatewayRef>();
+            }
+            else if (channelType == SessionChannelType.TypeName)
+            {
+                var initiator = new SessionGatewayInitiator()
+                {
+                    ListenEndPoint = new IPEndPoint(IPAddress.Any, port),
+                    ConnectEndPoint = new IPEndPoint(IPAddress.Loopback, port2),
+                    SessionSettings = new SessionSettings(),
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                };
+                InitializeGateway2Initiator(initiator, environment);
+                gateway2 = system.ActorOf(Props.Create(() => new SessionGateway(initiator))).Cast<GatewayRef>();
+            }
+            else if (channelType == WebSocketChannelType.TypeName)
+            {
+                var initiator = new WebSocketGatewayInitiator()
+                {
+                    ListenUri = string.Format("http://+:{0}/ws/", port),
+                    ConnectUri = string.Format("http://127.0.0.1:{0}/ws/", port),
+                };
+                InitializeGateway2Initiator(initiator, environment);
+                gateway2 = system.ActorOf(Props.Create(() => new WebSocketGateway(initiator))).Cast<GatewayRef>();
+            }
             gateway2.Start().Wait();
 
-            return new[] { gateway, gateway2 };
+            return new[] { gateway1, gateway2 };
         }
     }
 }

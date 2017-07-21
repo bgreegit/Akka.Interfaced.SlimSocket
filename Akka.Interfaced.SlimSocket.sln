@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26430.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Base", "core\Akka.Interfaced.SlimSocket.Base\Akka.Interfaced.SlimSocket.Base.csproj", "{DD5819EE-4F82-4C37-8BFC-2E873EC11E56}"
 EndProject
@@ -48,6 +48,32 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Echo.Program.Client", "performance\Echo\Echo.Program.Client\Echo.Program.Client.csproj", "{5F644F55-6BE0-4272-88E8-A697DA65B2D5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Echo.Program.Server", "performance\Echo\Echo.Program.Server\Echo.Program.Server.csproj", "{E64BA9A0-3073-4F73-ACE8-661745614009}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugin", "Plugin", "{7542A1C2-02BA-40D8-A3E5-3613420563A7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.TcpChannel", "plugin\Akka.Interfaced.SlimSocket.Client.TcpChannel\Akka.Interfaced.SlimSocket.Client.TcpChannel.csproj", "{E67A4ECC-CDCD-408C-8E85-355A017C0E90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Server.TcpChannel", "plugin\Akka.Interfaced.SlimSocket.Server.TcpChannel\Akka.Interfaced.SlimSocket.Server.TcpChannel.csproj", "{F4BC41EC-ACBF-41CD-ACBB-55136EBD6A79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Server.UdpChannel", "plugin\Akka.Interfaced.SlimSocket.Server.UdpChannel\Akka.Interfaced.SlimSocket.Server.UdpChannel.csproj", "{08ECE26F-E805-4531-A4CE-4E86FCAC9B63}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Server.WebSocketChannel", "plugin\Akka.Interfaced.SlimSocket.Server.WebSocketChannel\Akka.Interfaced.SlimSocket.Server.WebSocketChannel.csproj", "{C48BBADF-383D-4BF7-9999-4A4F9DD31248}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Server.SessionChannel", "plugin\Akka.Interfaced.SlimSocket.Server.SessionChannel\Akka.Interfaced.SlimSocket.Server.SessionChannel.csproj", "{8EFAA52A-CA75-4750-85A1-2E15FD1AD66C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.UdpChannel", "plugin\Akka.Interfaced.SlimSocket.Client.UdpChannel\Akka.Interfaced.SlimSocket.Client.UdpChannel.csproj", "{1644026A-FCFC-43B9-BEFD-3EF062B5B8CA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.WebSocketChannel", "plugin\Akka.Interfaced.SlimSocket.Client.WebSocketChannel\Akka.Interfaced.SlimSocket.Client.WebSocketChannel.csproj", "{E27D2600-3DAA-4897-ACEE-2AAD5E593FD0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.SessionChannel", "plugin\Akka.Interfaced.SlimSocket.Client.SessionChannel\Akka.Interfaced.SlimSocket.Client.SessionChannel.csproj", "{58B0ED62-5EAF-4D60-9AC2-9CA90A088562}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.SessionChannel.Net35", "plugin\Akka.Interfaced.SlimSocket.Client.SessionChannel.Net35\Akka.Interfaced.SlimSocket.Client.SessionChannel.Net35.csproj", "{BAEC573D-1387-4A82-AB56-4B802526D302}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.TcpChannel.Net35", "plugin\Akka.Interfaced.SlimSocket.Client.TcpChannel.Net35\Akka.Interfaced.SlimSocket.Client.TcpChannel.Net35.csproj", "{B2194319-5CF1-45F4-9E27-0D66163A2C8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.UdpChannel.Net35", "plugin\Akka.Interfaced.SlimSocket.Client.UdpChannel.Net35\Akka.Interfaced.SlimSocket.Client.UdpChannel.Net35.csproj", "{CE5B2139-3D3C-4AF7-BC1E-7D6FC4FD1F37}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Akka.Interfaced.SlimSocket.Client.WebSocketChannel.Net35", "plugin\Akka.Interfaced.SlimSocket.Client.WebSocketChannel.Net35\Akka.Interfaced.SlimSocket.Client.WebSocketChannel.Net35.csproj", "{2710A2A1-AAC9-4FC4-AB93-C71D90B87E49}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -131,6 +157,54 @@ Global
 		{E64BA9A0-3073-4F73-ACE8-661745614009}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E64BA9A0-3073-4F73-ACE8-661745614009}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E64BA9A0-3073-4F73-ACE8-661745614009}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E67A4ECC-CDCD-408C-8E85-355A017C0E90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E67A4ECC-CDCD-408C-8E85-355A017C0E90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E67A4ECC-CDCD-408C-8E85-355A017C0E90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E67A4ECC-CDCD-408C-8E85-355A017C0E90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F4BC41EC-ACBF-41CD-ACBB-55136EBD6A79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F4BC41EC-ACBF-41CD-ACBB-55136EBD6A79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F4BC41EC-ACBF-41CD-ACBB-55136EBD6A79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F4BC41EC-ACBF-41CD-ACBB-55136EBD6A79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{08ECE26F-E805-4531-A4CE-4E86FCAC9B63}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{08ECE26F-E805-4531-A4CE-4E86FCAC9B63}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{08ECE26F-E805-4531-A4CE-4E86FCAC9B63}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{08ECE26F-E805-4531-A4CE-4E86FCAC9B63}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C48BBADF-383D-4BF7-9999-4A4F9DD31248}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C48BBADF-383D-4BF7-9999-4A4F9DD31248}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C48BBADF-383D-4BF7-9999-4A4F9DD31248}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C48BBADF-383D-4BF7-9999-4A4F9DD31248}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EFAA52A-CA75-4750-85A1-2E15FD1AD66C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EFAA52A-CA75-4750-85A1-2E15FD1AD66C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EFAA52A-CA75-4750-85A1-2E15FD1AD66C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EFAA52A-CA75-4750-85A1-2E15FD1AD66C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1644026A-FCFC-43B9-BEFD-3EF062B5B8CA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1644026A-FCFC-43B9-BEFD-3EF062B5B8CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1644026A-FCFC-43B9-BEFD-3EF062B5B8CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1644026A-FCFC-43B9-BEFD-3EF062B5B8CA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E27D2600-3DAA-4897-ACEE-2AAD5E593FD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E27D2600-3DAA-4897-ACEE-2AAD5E593FD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E27D2600-3DAA-4897-ACEE-2AAD5E593FD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E27D2600-3DAA-4897-ACEE-2AAD5E593FD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58B0ED62-5EAF-4D60-9AC2-9CA90A088562}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58B0ED62-5EAF-4D60-9AC2-9CA90A088562}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58B0ED62-5EAF-4D60-9AC2-9CA90A088562}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58B0ED62-5EAF-4D60-9AC2-9CA90A088562}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BAEC573D-1387-4A82-AB56-4B802526D302}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BAEC573D-1387-4A82-AB56-4B802526D302}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BAEC573D-1387-4A82-AB56-4B802526D302}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BAEC573D-1387-4A82-AB56-4B802526D302}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2194319-5CF1-45F4-9E27-0D66163A2C8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2194319-5CF1-45F4-9E27-0D66163A2C8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2194319-5CF1-45F4-9E27-0D66163A2C8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2194319-5CF1-45F4-9E27-0D66163A2C8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CE5B2139-3D3C-4AF7-BC1E-7D6FC4FD1F37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CE5B2139-3D3C-4AF7-BC1E-7D6FC4FD1F37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CE5B2139-3D3C-4AF7-BC1E-7D6FC4FD1F37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CE5B2139-3D3C-4AF7-BC1E-7D6FC4FD1F37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2710A2A1-AAC9-4FC4-AB93-C71D90B87E49}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2710A2A1-AAC9-4FC4-AB93-C71D90B87E49}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2710A2A1-AAC9-4FC4-AB93-C71D90B87E49}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2710A2A1-AAC9-4FC4-AB93-C71D90B87E49}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -155,5 +229,17 @@ Global
 		{9D8C4E6E-0968-45AA-A189-F3E792BB18D4} = {1BE4A351-A3C6-4D1D-BFF9-A8F06615C93A}
 		{5F644F55-6BE0-4272-88E8-A697DA65B2D5} = {5A6E9451-11DC-43F2-9BD3-99ACA4D21DC8}
 		{E64BA9A0-3073-4F73-ACE8-661745614009} = {5A6E9451-11DC-43F2-9BD3-99ACA4D21DC8}
+		{E67A4ECC-CDCD-408C-8E85-355A017C0E90} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{F4BC41EC-ACBF-41CD-ACBB-55136EBD6A79} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{08ECE26F-E805-4531-A4CE-4E86FCAC9B63} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{C48BBADF-383D-4BF7-9999-4A4F9DD31248} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{8EFAA52A-CA75-4750-85A1-2E15FD1AD66C} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{1644026A-FCFC-43B9-BEFD-3EF062B5B8CA} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{E27D2600-3DAA-4897-ACEE-2AAD5E593FD0} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{58B0ED62-5EAF-4D60-9AC2-9CA90A088562} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{BAEC573D-1387-4A82-AB56-4B802526D302} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{B2194319-5CF1-45F4-9E27-0D66163A2C8A} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{CE5B2139-3D3C-4AF7-BC1E-7D6FC4FD1F37} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
+		{2710A2A1-AAC9-4FC4-AB93-C71D90B87E49} = {7542A1C2-02BA-40D8-A3E5-3613420563A7}
 	EndGlobalSection
 EndGlobal

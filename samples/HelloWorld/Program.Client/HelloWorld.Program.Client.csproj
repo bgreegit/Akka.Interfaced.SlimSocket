@@ -97,6 +97,22 @@
       <Project>{46710772-28c4-498f-be7c-189fda75130c}</Project>
       <Name>Akka.Interfaced.SlimSocket.Client</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.SessionChannel\Akka.Interfaced.SlimSocket.Client.SessionChannel.csproj">
+      <Project>{58b0ed62-5eaf-4d60-9ac2-9ca90a088562}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.SessionChannel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.TcpChannel\Akka.Interfaced.SlimSocket.Client.TcpChannel.csproj">
+      <Project>{e67a4ecc-cdcd-408c-8e85-355a017c0e90}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.TcpChannel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.UdpChannel\Akka.Interfaced.SlimSocket.Client.UdpChannel.csproj">
+      <Project>{1644026a-fcfc-43b9-befd-3ef062b5b8ca}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.UdpChannel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.WebSocketChannel\Akka.Interfaced.SlimSocket.Client.WebSocketChannel.csproj">
+      <Project>{e27d2600-3daa-4897-acee-2aad5e593fd0}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.WebSocketChannel</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Interface.SlimClient\HelloWorld.Interface.SlimClient.csproj">
       <Project>{91981c4d-0eaa-46a0-ae1e-1db264768512}</Project>
       <Name>HelloWorld.Interface.SlimClient</Name>

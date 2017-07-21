@@ -1,5 +1,7 @@
 ﻿using Akka.Interfaced.SlimSocket;
 using Akka.Interfaced.SlimSocket.Client;
+using Akka.Interfaced.SlimSocket.Client.SessionChannel;
+using Akka.Interfaced.SlimSocket.Client.TcpChannel;
 using Common.Logging;
 using Echo.Interface;
 using System;
@@ -12,8 +14,8 @@ namespace Echo.Program.Client
     internal class EchoDriver
     {
         private ChannelFactory _channelFactory;
+        private IClientChannelType _channelType;
         private ChannelUpdator _channelUpdator;
-        //private Updator _updator;
 
         private class ChannelEntry
         {
@@ -21,7 +23,6 @@ namespace Echo.Program.Client
             public EchoRef Echo { get; set; }
             public TimeSpan Elapsed { get; set; }
             public EchoSender Sender { get; set; }
-            public EchoSender2 Sender2 { get; set; }
         }
         private List<ChannelEntry> _entries = new List<ChannelEntry>();
         private byte[] _echoData;
@@ -49,13 +50,30 @@ namespace Echo.Program.Client
 
             _channelFactory = new ChannelFactory
             {
-                Type = (ChannelType)Enum.Parse(typeof(ChannelType), config.ChannelType, true),
-                ConnectEndPoint = new IPEndPoint(IPAddress.Parse(_config.RemoteIp), _config.RemotePort),
                 CreateChannelLogger = () => LogManager.GetLogger("Channel"),
                 CreateObserverRegistry = () => new ObserverRegistry(),
                 PacketSerializer = PacketSerializer.CreatePacketSerializer(),
-                SessionSettings = new SessionSettings()
             };
+
+            if (config.ChannelType == TcpClientChannelType.TypeName)
+            {
+                _channelType = new TcpClientChannelType()
+                {
+                    ConnectEndPoint = new IPEndPoint(IPAddress.Parse(_config.RemoteIp), _config.RemotePort),
+                };
+            }
+            else if (config.ChannelType == SessionClientChannelType.TypeName)
+            {
+                _channelType = new SessionClientChannelType()
+                {
+                    ConnectEndPoint = new IPEndPoint(IPAddress.Parse(_config.RemoteIp), _config.RemotePort),
+                    SessionSettings = new SessionSettings()
+                };
+            }
+            else
+            {
+                throw new InvalidOperationException("Invalid config.ChannelType");
+            }
 
             _channelUpdator = new ChannelUpdator();
             _channelUpdator.Start(100);
@@ -68,7 +86,7 @@ namespace Echo.Program.Client
 
         private async void CreateChannel(int id)
         {
-            var channel = _channelFactory.Create();
+            var channel = _channelFactory.CreateByType(_channelType);
             channel.StateChanged += ChannelStateChanged;
 
             try
@@ -83,15 +101,12 @@ namespace Echo.Program.Client
             }
 
             var echo = channel.CreateRef<EchoRef>(1);
-            //var sender = new EchoSender(echo, _echoData, _statistics);
-            var sender2 = new EchoSender2(echo, _echoData, _statistics, _config.RequestWaitDelay);
-            //sender.IsShowUpdateTime = id == 0;
+            var sender = new EchoSender(echo, _echoData, _statistics, _config.RequestWaitDelay);
             var entry = new ChannelEntry()
             {
                 Channel = channel,
                 Echo = echo,
-                //Sender = sender,
-                Sender2 = sender2
+                Sender = sender
             };
 
             _channelUpdator.AddChannel(channel);
@@ -100,8 +115,7 @@ namespace Echo.Program.Client
                 _entries.Add(entry);
             }
 
-            //sender.Start(_config.RequestInterval);
-            sender2.Start();
+            sender.Start();
         }
 
         private void ChannelStateChanged(IChannel channel, ChannelStateType state)

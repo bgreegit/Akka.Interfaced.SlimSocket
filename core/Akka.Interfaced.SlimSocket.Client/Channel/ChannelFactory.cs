@@ -1,101 +1,80 @@
-﻿using System;
-using System.Net;
-using Common.Logging;
-using Lidgren.Network;
+﻿using Common.Logging;
+using System;
+using System.Collections.Generic;
 
 namespace Akka.Interfaced.SlimSocket.Client
 {
     public class ChannelFactory
     {
-        public ChannelType Type { get; set; }
-        public IPEndPoint ConnectEndPoint { get; set; }
-        public string ConnectUri { get; set; }
-        public string ConnectToken { get; set; }
         public Func<ILog> CreateChannelLogger { get; set; }
         public ISlimTaskFactory TaskFactory { get; set; }
         public Func<IObserverRegistry> CreateObserverRegistry { get; set; }
         public Func<IChannel, string, IChannel> ChannelRouter { get; set; }
         public IPacketSerializer PacketSerializer { get; set; }
-        public object UdpConfig { get; set; }
-        public SessionSettings SessionSettings { get; set; }
-        public Func<IWebSocket> CreateWebSocket { get; set; }
+
+        private List<IClientChannelType> _channelTypes = new List<IClientChannelType>();
 
         public ChannelFactory()
         {
             TaskFactory = new SlimTaskFactory();
-            UdpConfig = new NetPeerConfiguration("SlimSocket");
         }
 
-        public IChannel Create()
+        public void RegisterChannelType(IClientChannelType channelType)
         {
-            return Create(null);
+            _channelTypes.Add(channelType);
         }
 
-        public IChannel Create(string address)
+        public void UnregisterChannelType(string name)
         {
-            var type = Type;
-            var connectEndPoint = ConnectEndPoint;
-            var connectUri = ConnectUri;
-            var connectToken = ConnectToken;
+            _channelTypes.RemoveAll((ct) => ct.Name == name);
+        }
 
-            if (string.IsNullOrEmpty(address) == false)
+        public IChannel CreateByType(IClientChannelType channelType)
+        {
+            var channelLogger = CreateChannelLogger();
+            var channel = channelType.CreateChannel(null, channelLogger, PacketSerializer);
+            if (channel != null)
             {
-                var parts = address.Split('|'); // type|endpoint|{token}
-                if (parts.Length < 2)
-                {
-                    throw new ArgumentException(nameof(address));
-                }
-
-                type = (ChannelType)Enum.Parse(typeof(ChannelType), parts[0], true);
-                if (type == ChannelType.Tcp || type == ChannelType.Udp || type == ChannelType.Session)
-                {
-                    connectEndPoint = IPEndPointHelper.Parse(parts[1]);
-                }
-                else if (type == ChannelType.WebSocket)
-                {
-                    connectUri = parts[1];
-                }
-                else
-                {
-                    throw new ArgumentException(nameof(address));
-                }
-
-                connectToken = parts.Length > 2 ? parts[2] : null;
+                InitializeChannel(channel);
+                return channel;
             }
 
-            switch (type)
+            return null;
+        }
+
+        public IChannel CreateByType(string channelTypeName)
+        {
+            var channelLogger = CreateChannelLogger();
+            foreach (var channelType in _channelTypes)
             {
-                case ChannelType.Tcp:
-                    var tcpChannel = new TcpChannel(CreateChannelLogger(), connectEndPoint, connectToken, PacketSerializer);
-                    InitializeChannel(tcpChannel);
-                    return tcpChannel;
-
-                case ChannelType.Udp:
-                    var udpChannel = new UdpChannel(CreateChannelLogger(), connectEndPoint, connectToken, PacketSerializer, (NetPeerConfiguration)UdpConfig);
-                    InitializeChannel(udpChannel);
-                    return udpChannel;
-
-                case ChannelType.WebSocket:
-                    var logger = CreateChannelLogger();
-
-                    var createWebSocket = CreateWebSocket;
-                    if (createWebSocket == null)
+                if (channelType.Name == channelTypeName)
+                {
+                    var channel = channelType.CreateChannel(null, channelLogger, PacketSerializer);
+                    if (channel != null)
                     {
-                        createWebSocket = () => { return new WebSocket(logger); };
+                        InitializeChannel(channel);
+                        return channel;
                     }
-
-                    var webSocketChannel = new WebSocketChannel(logger, connectUri, connectToken, PacketSerializer, createWebSocket);
-                    InitializeChannel(webSocketChannel);
-                    return webSocketChannel;
-
-                case ChannelType.Session:
-                    var sessionChannel = new SessionChannel(CreateChannelLogger(), connectEndPoint, connectToken, PacketSerializer, SessionSettings);
-                    InitializeChannel(sessionChannel);
-                    return sessionChannel;
-
-                default:
-                    throw new InvalidOperationException("Unknown TransportType");
+                }
             }
+
+            return null;
+        }
+
+        public IChannel CreateByAddress(string address)
+        {
+            var channelLogger = CreateChannelLogger();
+            foreach (var channelType in _channelTypes)
+            {
+                var channel = channelType.CreateChannel(address, channelLogger, PacketSerializer);
+                if (channel != null)
+                {
+                    InitializeChannel(channel);
+                    return channel;
+                }
+            }
+
+            return null;
         }
 
         private void InitializeChannel(ChannelBase channel)

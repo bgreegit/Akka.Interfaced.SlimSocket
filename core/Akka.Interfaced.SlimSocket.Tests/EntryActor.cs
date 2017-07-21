@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Akka.Actor;
 using Akka.Interfaced.SlimServer;
+using Akka.Interfaced.SlimSocket.Server.SessionChannel;
 
 namespace Akka.Interfaced.SlimSocket
 {
@@ -33,7 +34,7 @@ namespace Akka.Interfaced.SlimSocket
             // Force SessionChannel to close line
             if (message == "CloseSessionLine")
             {
-                _channel.CastToIActorRef().Tell(new Server.SessionChannel.ChannelCloseRequestMessage());
+                _channel.CastToIActorRef().Tell(new SessionChannel.ChannelCloseRequestMessage());
             }
 
             // Force SessionChannel to close gracefully

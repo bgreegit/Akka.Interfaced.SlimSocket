@@ -1,8 +1,9 @@
 ﻿using Akka.Actor;
 using Akka.Interfaced;
 using Akka.Interfaced.SlimServer;
-using Akka.Interfaced.SlimSocket;
 using Akka.Interfaced.SlimSocket.Server;
+using Akka.Interfaced.SlimSocket.Server.SessionChannel;
+using Akka.Interfaced.SlimSocket.Server.TcpChannel;
 using Common.Logging;
 using Echo.Interface;
 using Newtonsoft.Json;
@@ -58,8 +59,7 @@ namespace Echo.Program.Server
             using (var system = ActorSystem.Create("MySystem", "akka.loglevel = DEBUG "))
             {
                 DeadRequestProcessingActor.Install(system);
-                var channelType = (ChannelType)Enum.Parse(typeof(ChannelType), config.ChannelType, true);
-                var sessionGateway = StartGateway(system, channelType, config.Ip, config.Port);
+                var sessionGateway = StartGateway(system, config.ChannelType, config.Ip, config.Port);
 
                 Console.WriteLine("Please enter key to quit.");
                 Console.ReadLine();
@@ -68,35 +68,49 @@ namespace Echo.Program.Server
             }
         }
 
-        private static GatewayRef StartGateway(ActorSystem system, ChannelType type, string ip, int port)
+        private static GatewayRef StartGateway(ActorSystem system, string channelType, string ip, int port)
         {
             var serializer = PacketSerializer.CreatePacketSerializer();
 
-            var initiator = new GatewayInitiator
-            {
-                ListenEndPoint = new IPEndPoint(IPAddress.Parse(ip), port),
-                ListenUri = string.Format("http://+:{0}/ws/", port),
-                GatewayLogger = LogManager.GetLogger("Gateway"),
-                CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep})"),
-                SessionSettings = new SessionSettings(),
-                TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
-                WebSocketConnectionSettings = new WebSocketConnectionSettings { PacketSerializer = serializer },
-                PacketSerializer = serializer,
-                CreateInitialActors = (context, connection) => new[]
-                {
-                    Tuple.Create(context.ActorOf(Props.Create(() => new EchoActor())),
-                                 new TaggedType[] { typeof(IEcho) },
-                                 ActorBindingFlags.StopThenCloseChannel)
-                }
-            };
-
             GatewayRef gateway = null;
-            if (type == ChannelType.Tcp)
+            if (channelType == TcpChannelType.TypeName)
             {
+                var initiator = new TcpGatewayInitiator
+                {
+                    // Common
+                    GatewayLogger = LogManager.GetLogger($"Gateway(channelType)"),
+                    CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep})"),
+                    PacketSerializer = serializer,
+                    CreateInitialActors = (context, connection) => new[]
+                    {
+                        Tuple.Create(context.ActorOf(Props.Create(() => new EchoActor())),
+                                     new TaggedType[] { typeof(IEcho) },
+                                     ActorBindingFlags.StopThenCloseChannel)
+                    },
+                    // Tcp
+                    ListenEndPoint = new IPEndPoint(IPAddress.Parse(ip), port),
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                };
                 gateway = system.ActorOf(Props.Create(() => new TcpGateway(initiator))).Cast<GatewayRef>();
             }
-            else if (type == ChannelType.Session)
+            else if (channelType == SessionChannelType.TypeName)
             {
+                var initiator = new SessionGatewayInitiator
+                {
+                    // Common
+                    GatewayLogger = LogManager.GetLogger($"Gateway(channelType)"),
+                    CreateChannelLogger = (ep, _) => LogManager.GetLogger($"Channel({ep})"),
+                    PacketSerializer = serializer,
+                    CreateInitialActors = (context, connection) => new[]
+                    {
+                        Tuple.Create(context.ActorOf(Props.Create(() => new EchoActor())),
+                                     new TaggedType[] { typeof(IEcho) },
+                                     ActorBindingFlags.StopThenCloseChannel)
+                    },
+                    // Session
+                    ListenEndPoint = new IPEndPoint(IPAddress.Parse(ip), port),
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = serializer },
+                };
                 gateway = system.ActorOf(Props.Create(() => new SessionGateway(initiator))).Cast<GatewayRef>();
             }
             gateway.Start().Wait();

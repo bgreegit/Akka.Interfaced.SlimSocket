@@ -65,6 +65,9 @@
     <Compile Include="..\Akka.Interfaced.SlimSocket.Base\ExceptionSerializer.cs">
       <Link>ExceptionSerializer.cs</Link>
     </Compile>
+    <Compile Include="..\Akka.Interfaced.SlimSocket.Base\IChannelType.cs">
+      <Link>IChannelType.cs</Link>
+    </Compile>
     <Compile Include="..\Akka.Interfaced.SlimSocket.Base\IMessageSerializer.cs">
       <Link>IMessageSerializer.cs</Link>
     </Compile>

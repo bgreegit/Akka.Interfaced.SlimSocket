@@ -82,6 +82,22 @@
       <Project>{c4008395-ce4c-430b-8f78-623b6be83989}</Project>
       <Name>Akka.Interfaced.SlimSocket.Client.Net35</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.SessionChannel.Net35\Akka.Interfaced.SlimSocket.Client.SessionChannel.Net35.csproj">
+      <Project>{baec573d-1387-4a82-ab56-4b802526d302}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.SessionChannel.Net35</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.TcpChannel.Net35\Akka.Interfaced.SlimSocket.Client.TcpChannel.Net35.csproj">
+      <Project>{b2194319-5cf1-45f4-9e27-0d66163a2c8a}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.TcpChannel.Net35</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.UdpChannel.Net35\Akka.Interfaced.SlimSocket.Client.UdpChannel.Net35.csproj">
+      <Project>{ce5b2139-3d3c-4af7-bc1e-7d6fc4fd1f37}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.UdpChannel.Net35</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\plugin\Akka.Interfaced.SlimSocket.Client.WebSocketChannel.Net35\Akka.Interfaced.SlimSocket.Client.WebSocketChannel.Net35.csproj">
+      <Project>{2710a2a1-aac9-4fc4-ab93-c71d90b87e49}</Project>
+      <Name>Akka.Interfaced.SlimSocket.Client.WebSocketChannel.Net35</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Interface.SlimClient.Net35\HelloWorld.Interface.SlimClient.Net35.csproj">
       <Project>{39ea3d69-c07d-43bf-ac96-60947f4c95d2}</Project>
       <Name>HelloWorld.Interface.SlimClient.Net35</Name>

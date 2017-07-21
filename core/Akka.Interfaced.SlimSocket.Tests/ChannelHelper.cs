@@ -1,9 +1,16 @@
-﻿using System;
-using System.Net;
-using Akka.Actor;
+﻿using Akka.Actor;
 using Akka.Interfaced.SlimSocket.Client;
-using Lidgren.Network;
+using Akka.Interfaced.SlimSocket.Client.SessionChannel;
+using Akka.Interfaced.SlimSocket.Client.TcpChannel;
+using Akka.Interfaced.SlimSocket.Client.UdpChannel;
+using Akka.Interfaced.SlimSocket.Client.WebSocketChannel;
 using Akka.Interfaced.SlimSocket.Server;
+using Akka.Interfaced.SlimSocket.Server.SessionChannel;
+using Akka.Interfaced.SlimSocket.Server.TcpChannel;
+using Akka.Interfaced.SlimSocket.Server.UdpChannel;
+using Akka.Interfaced.SlimSocket.Server.WebSocketChannel;
+using System;
+using System.Net;
 
 namespace Akka.Interfaced.SlimSocket
 {
@@ -12,81 +19,134 @@ namespace Akka.Interfaced.SlimSocket
         private static readonly Server.PacketSerializer s_serverSerializer = Server.PacketSerializer.CreatePacketSerializer();
         private static readonly Client.PacketSerializer s_clientSerializer = Client.PacketSerializer.CreatePacketSerializer();
 
-        public static Server.GatewayRef CreateGateway(ActorSystem system, ChannelType type, string name, IPEndPoint endPoint,
+        public static Server.GatewayRef CreateGateway(ActorSystem system, string channelType, string name, IPEndPoint endPoint,
                                                       string listenUri, string connectUri,
                                                       XunitOutputLogger.Source outputSource,
                                                       Action<Server.GatewayInitiator> clientInitiatorSetup = null)
         {
             // initialize gateway initiator
 
-            var initiator = new Server.GatewayInitiator()
+            GatewayInitiator initiator = null;
+            if (channelType == TcpChannelType.TypeName)
             {
-                GatewayLogger = new XunitOutputLogger($"Gateway({name})", outputSource),
-                ListenEndPoint = endPoint,
-                ConnectEndPoint = endPoint,
-                ListenUri = listenUri,
-                ConnectUri = connectUri,
-                TokenRequired = false,
-                CreateChannelLogger = (_, o) => new XunitOutputLogger($"ServerChannel({name})", outputSource),
-                CheckCreateChannel = (_, o) => true,
-                SessionSettings = new Server.SessionSettings()
+                initiator = new TcpGatewayInitiator()
                 {
-                    OfflineTimeout = TimeSpan.FromSeconds(5),
-                    TimeWaitTimeout = TimeSpan.FromSeconds(1), // to fail faster
-                    AliveCheckInterval = TimeSpan.FromSeconds(0.1), // to fail faster
-                    AliveCheckWaitInterval = TimeSpan.FromSeconds(0.5), // to fail faster
-                },
-                TcpConnectionSettings = new Server.TcpConnectionSettings { PacketSerializer = s_serverSerializer },
-                WebSocketConnectionSettings = new Server.WebSocketConnectionSettings { PacketSerializer = s_serverSerializer },
-                PacketSerializer = s_serverSerializer,
-            };
+                    ListenEndPoint = endPoint,
+                    ConnectEndPoint = endPoint,
+                    TcpConnectionSettings = new TcpConnectionSettings { PacketSerializer = s_serverSerializer },
+                };
+            }
+            else if (channelType == UdpChannelType.TypeName)
+            {
+                initiator = new UdpGatewayInitiator()
+                {
+                    ListenEndPoint = endPoint,
+                    ConnectEndPoint = endPoint,
+                };
+            }
+            else if (channelType == SessionChannelType.TypeName)
+            {
+                initiator = new SessionGatewayInitiator()
+                {
+                    ListenEndPoint = endPoint,
+                    ConnectEndPoint = endPoint,
+                    SessionSettings = new Server.SessionChannel.SessionSettings()
+                    {
+                        OfflineTimeout = TimeSpan.FromSeconds(5),
+                        TimeWaitTimeout = TimeSpan.FromSeconds(1), // to fail faster
+                        AliveCheckInterval = TimeSpan.FromSeconds(0.1), // to fail faster
+                        AliveCheckWaitInterval = TimeSpan.FromSeconds(0.5), // to fail faster
+                    },
+                    TcpConnectionSettings = new TcpConnectionSettings
+                    {
+                        PacketSerializer = s_serverSerializer
+                    },
+                };
+            }
+            else if (channelType == WebSocketChannelType.TypeName)
+            {
+                initiator = new WebSocketGatewayInitiator()
+                {
+                    ListenUri = listenUri,
+                    ConnectUri = connectUri,
+                    WebSocketConnectionSettings = new WebSocketConnectionSettings()
+                    {
+                        PacketSerializer = s_serverSerializer
+                    },
+                };
+            }
+            else
+            {
+                return null;
+            }
+
+            initiator.GatewayLogger = new XunitOutputLogger($"Gateway({name})", outputSource);
+            initiator.TokenRequired = false;
+            initiator.CreateChannelLogger = (_, o) => new XunitOutputLogger($"ServerChannel({name})", outputSource);
+            initiator.CheckCreateChannel = (_, o) => true;
+            initiator.PacketSerializer = s_serverSerializer;
 
             clientInitiatorSetup?.Invoke(initiator);
 
             // create gateway and start it
 
             GatewayRef gateway = null;
-            if (type == ChannelType.Tcp)
+            if (channelType == TcpChannelType.TypeName)
             {
-                gateway = system.ActorOf(Props.Create(() => new Server.TcpGateway(initiator))).Cast<Server.GatewayRef>();
+                gateway = system.ActorOf(Props.Create(() => new TcpGateway(initiator as TcpGatewayInitiator))).Cast<GatewayRef>();
             }
-            else if (type == ChannelType.Udp)
+            else if (channelType == UdpChannelType.TypeName)
             {
-                gateway = system.ActorOf(Props.Create(() => new Server.UdpGateway(initiator))).Cast<Server.GatewayRef>();
+                gateway = system.ActorOf(Props.Create(() => new UdpGateway(initiator as UdpGatewayInitiator))).Cast<GatewayRef>();
             }
-            else if (type == ChannelType.WebSocket)
+            else if (channelType == SessionChannelType.TypeName)
             {
-                gateway = system.ActorOf(Props.Create(() => new Server.WebSocketGateway(initiator))).Cast<Server.GatewayRef>();
+                gateway = system.ActorOf(Props.Create(() => new SessionGateway(initiator as SessionGatewayInitiator))).Cast<GatewayRef>();
             }
-            else if (type == ChannelType.Session)
+            else if (channelType == WebSocketChannelType.TypeName)
             {
-                gateway = system.ActorOf(Props.Create(() => new Server.SessionGateway(initiator))).Cast<Server.GatewayRef>();
+                gateway = system.ActorOf(Props.Create(() => new WebSocketGateway(initiator as WebSocketGatewayInitiator))).Cast<GatewayRef>();
             }
 
             gateway.Start().Wait();
-
             return gateway;
         }
 
-        public static Client.IChannel CreateClientChannel(string name, ChannelType type, IPEndPoint endPoint, string uri,
+        public static Client.IChannel CreateClientChannel(string name, string channelType, IPEndPoint endPoint, string uri,
                                                           XunitOutputLogger.Source outputSource)
         {
-            if (type == ChannelType.Tcp || type == ChannelType.Udp || type == ChannelType.Session)
+            if (channelType == TcpClientChannelType.TypeName ||
+                channelType == UdpClientChannelType.TypeName ||
+                channelType == SessionClientChannelType.TypeName)
             {
-                return CreateClientChannel(name, $"{type}|{endPoint}|", outputSource);
+                return CreateClientChannel(name, $"{channelType}", $"{channelType}|{endPoint}|", outputSource);
             }
             else
             {
-                return CreateClientChannel(name, $"{type}|{uri}|", outputSource);
+                return CreateClientChannel(name, $"{channelType}", $"{channelType}|{uri}|", outputSource);
             }
         }
 
-        public static Client.IChannel CreateClientChannel(string name, string address, XunitOutputLogger.Source outputSource)
+        public static Client.IChannel CreateClientChannel(string name, string channelType, string address, XunitOutputLogger.Source outputSource)
         {
             // create channel and start it
 
             var logger = new XunitOutputLogger($"ClientChannel({name})", outputSource);
-            var sessionSettings = new Client.SessionSettings()
+
+            var factory = new ChannelFactory
+            {
+                CreateChannelLogger = () => logger,
+                CreateObserverRegistry = () => new ObserverRegistry(),
+                PacketSerializer = s_clientSerializer,
+            };
+
+            var tcpChannelType = new TcpClientChannelType();
+            var udpChannelType = new UdpClientChannelType();
+            var sessionChannelType = new SessionClientChannelType();
+            var webSocketChannelType = new WebSocketClientChannelType();
+
+            udpChannelType.UdpConfig.MaximumHandshakeAttempts = 1; // to fail faster
+            sessionChannelType.SessionSettings = new Client.SessionChannel.SessionSettings()
             {
                 OfflineTimeout = TimeSpan.FromSeconds(5), // to fail faster
                 RebindCoolTimeTimeout = TimeSpan.FromSeconds(0.1), // to fail faster
@@ -96,18 +156,12 @@ namespace Akka.Interfaced.SlimSocket
                 AliveCheckWaitInterval = TimeSpan.FromSeconds(1)
             };
 
-            var factory = new Client.ChannelFactory
-            {
-                CreateChannelLogger = () => logger,
-                CreateObserverRegistry = () => new ObserverRegistry(),
-                PacketSerializer = s_clientSerializer,
-                SessionSettings = sessionSettings,
-            };
+            factory.RegisterChannelType(tcpChannelType);
+            factory.RegisterChannelType(udpChannelType);
+            factory.RegisterChannelType(sessionChannelType);
+            factory.RegisterChannelType(webSocketChannelType);
 
-            var udpConfig = ((NetPeerConfiguration)factory.UdpConfig);
-            udpConfig.MaximumHandshakeAttempts = 1; // to fail faster
-
-            var channel = factory.Create(address);
+            var channel = factory.CreateByAddress(address);
             var updator = new TaskBasedChannelUpdator();
             updator.StartUpdate(channel);
             return channel;
